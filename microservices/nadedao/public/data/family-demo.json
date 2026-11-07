@@ -1,0 +1,50 @@
+[
+  {
+    "id": "mom",
+    "name": "王秀英",
+    "relation": "媽媽",
+    "persona": "長者",
+    "birthday": "1948/03/15",
+    "citizen": true,
+    "nativePeople": false,
+    "town": "文山區",
+    "village": "興旺里",
+    "note": "獨居，行動不便，沒有智慧型手機",
+    "consent": "granted",
+    "consentChannel": "臨櫃（文山區公所）",
+    "permissions": { "notify": true, "query": true, "apply": true, "collect": true },
+    "answers": { "incomeStatus": "midLow" }
+  },
+  {
+    "id": "daughter",
+    "name": "金小恩",
+    "relation": "女兒",
+    "persona": "兒童",
+    "birthday": "2026/10/20",
+    "citizen": true,
+    "nativePeople": false,
+    "town": "中山區",
+    "village": "正得里",
+    "note": "10 月 20 日出生，已辦好出生登記",
+    "consent": "granted",
+    "consentChannel": "監護人（父母）",
+    "permissions": { "notify": true, "query": true, "apply": true, "collect": true },
+    "answers": { "residency10m": true }
+  },
+  {
+    "id": "brother",
+    "name": "金小華",
+    "relation": "弟弟",
+    "persona": "身心障礙",
+    "birthday": "1993/08/20",
+    "citizen": true,
+    "nativePeople": false,
+    "town": "中山區",
+    "village": "正得里",
+    "note": "領有身心障礙證明",
+    "consent": "pending",
+    "consentChannel": "城市通 App",
+    "permissions": { "notify": true, "query": true, "apply": false, "collect": false },
+    "answers": { "disabilityCard": true, "incomeStatus": "low" }
+  }
+]

@@ -1,0 +1,77 @@
+{
+  "incomeStatus": {
+    "text": "家裡是不是臺北市列冊的低收入戶或中低收入戶？",
+    "hint": "不確定的話先選「不確定」，可以到戶籍地區公所社會課詢問。",
+    "options": [
+      { "value": "low", "label": "低收入戶" },
+      { "value": "midLow", "label": "中低收入戶" },
+      { "value": "none", "label": "都不是" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  },
+  "disabilityCard": {
+    "text": "有沒有臺北市核發或註記的身心障礙證明？",
+    "options": [
+      { "value": true, "label": "有" },
+      { "value": false, "label": "沒有" }
+    ]
+  },
+  "notInstitutionalized": {
+    "text": "目前是住在家裡，而不是住在政府公費安置的夜間或全日住宿型機構？",
+    "options": [
+      { "value": true, "label": "住在家裡" },
+      { "value": false, "label": "住在公費安置機構" }
+    ]
+  },
+  "income39960": {
+    "text": "全家收入平均起來，每人每月是否在 39,960 元以下？",
+    "hint": "115 年度標準。全家人口怎麼算，以區公所審核為準。",
+    "options": [
+      { "value": true, "label": "是，在這以下" },
+      { "value": false, "label": "超過" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  },
+  "assetsDisability": {
+    "text": "全家的存款、股票等是否不超過 200 萬元（每多 1 人加 25 萬元），土地房屋合計不超過 992 萬元？",
+    "options": [
+      { "value": true, "label": "沒有超過" },
+      { "value": false, "label": "超過" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  },
+  "income20744": {
+    "text": "全家收入平均起來，每人每月是否在 20,744 元以下？",
+    "hint": "115 年度臺北市最低生活費。全家人口怎麼算，以區公所審核為準。",
+    "options": [
+      { "value": true, "label": "是，在這以下" },
+      { "value": false, "label": "超過" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  },
+  "assetsLowIncome": {
+    "text": "全家的存款、股票平均每人是否不超過 15 萬元，土地房屋合計不超過 837 萬元？",
+    "hint": "房貸不能扣除。",
+    "options": [
+      { "value": true, "label": "沒有超過" },
+      { "value": false, "label": "超過" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  },
+  "hasNewborn": {
+    "text": "寶寶已經在臺北市辦好出生登記，而且出生還不到 60 天嗎？",
+    "hint": "生育補助要在出生次日起 60 日內申請。",
+    "options": [
+      { "value": true, "label": "是" },
+      { "value": false, "label": "不是" }
+    ]
+  },
+  "residency10m": {
+    "text": "寶寶出生前 10 個月起，爸爸或媽媽一直設籍在臺北市、新北市或基隆市，現在設籍臺北市嗎？",
+    "options": [
+      { "value": true, "label": "是" },
+      { "value": false, "label": "不是" },
+      { "value": "unknown", "label": "不確定" }
+    ]
+  }
+}

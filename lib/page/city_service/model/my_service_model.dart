@@ -31,6 +31,7 @@ enum MyServiceItemId {
   zoo,
   helloCloudflare,
   classifierLab,
+  nadedao,
   ;
 }
 
@@ -199,6 +200,14 @@ extension MyServiceIdExt on MyServiceItemId {
           category: MyServiceCategory.other,
           destinationUrl: 'https://townpass-hello.shawn-shaubo-hsu.workers.dev/classify/',
           forceWebViewTitle: '分類模型測試',
+        ),
+      MyServiceItemId.nadedao => MyServiceItem(
+          title: '拿得到',
+          description: '找出你和家人可以領的補助，家人也能代辦',
+          icon: Assets.svg.iconNadedao24.svg(),
+          category: MyServiceCategory.cityService,
+          destinationUrl: 'https://townpass-nadedao.shawn-shaubo-hsu.workers.dev/',
+          forceWebViewTitle: '拿得到',
         ),
     };
   }

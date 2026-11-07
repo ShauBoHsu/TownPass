@@ -1,0 +1,21 @@
+{
+  "name": "nadedao",
+  "version": "0.1.0",
+  "private": true,
+  "description": "拿得到：城市通補助自動比對與代理人服務",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "start": "node src/node.js",
+    "test": "node --test test/engine.test.js test/rules.test.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "hono": "^4.13.16"
+  },
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  }
+}

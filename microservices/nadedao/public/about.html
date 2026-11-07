@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>拿得到・服務介紹</title>
+  <meta name="description" content="拿得到：城市通裡的補助比對與家人代辦微服務。功能說明、技術架構與 Demo 流程。">
+  <style>
+    :root {
+      --p50: #edf8fa; --p100: #d4eef3; --p500: #5ab4c5; --p700: #2f8697; --p900: #1d5763;
+      --s50: #fef6e7; --s500: #f5ba4b; --s700: #a86b00;
+      --r50: #fdeeee; --r600: #c4343f; --g50: #e9f6ee; --g700: #2e7d4f;
+      --gray50: #f3f5f6; --gray100: #e6eaec; --gray300: #c4ced3; --gray500: #738995; --gray700: #4a5a63; --gray900: #1f2a30;
+      --white: #fff; --radius: 14px;
+      --font: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", Roboto, system-ui, sans-serif;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--gray50); color: var(--gray900); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+    a { color: var(--p700); }
+    h1, h2, h3, h4 { line-height: 1.35; margin: 0; }
+    p { margin: 0; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; background: var(--gray100); padding: 1px 6px; border-radius: 6px; }
+
+    /* 版面 */
+    .topnav { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--gray100); }
+    .topnav .in { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 6px 18px; align-items: center; flex-wrap: wrap; }
+    .brand { font-weight: 700; color: var(--p900); text-decoration: none; display: flex; gap: 8px; align-items: center; margin-right: auto; }
+    .brand svg { width: 26px; height: 26px; }
+    .topnav a.nav { color: var(--gray700); text-decoration: none; font-size: 15px; }
+    .topnav a.nav:hover { color: var(--p700); }
+    .layout { max-width: 1240px; margin: 0 auto; padding: 0 16px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 40px; }
+    article { min-width: 0; padding-bottom: 80px; }
+    aside.phone-col { position: sticky; top: 64px; align-self: start; padding-top: 32px; }
+    section.block { padding-top: 56px; }
+    section.block > h2 { font-size: 26px; margin-bottom: 6px; }
+    .kicker { color: var(--p700); font-weight: 700; font-size: 14px; letter-spacing: .08em; margin-bottom: 4px; }
+    .lead { color: var(--gray700); max-width: 62ch; margin-bottom: 20px; }
+    .muted { color: var(--gray500); }
+    .small { font-size: 14px; }
+
+    /* Hero */
+    .hero { padding-top: 40px; }
+    .hero h1 { font-size: clamp(34px, 5vw, 52px); color: var(--p900); letter-spacing: .02em; }
+    .hero .tag { display: inline-block; background: var(--s50); color: var(--s700); border-radius: 999px; padding: 2px 12px; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .hero .sub { font-size: 20px; color: var(--gray700); margin: 12px 0 20px; max-width: 34em; }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 18px; border-radius: 12px; border: 2px solid var(--p500); background: var(--p500); color: #fff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+    .btn.secondary { background: #fff; color: var(--p700); }
+    .btn.small { min-height: 36px; padding: 4px 12px; font-size: 14px; border-radius: 10px; }
+    .btn:focus-visible { outline: 3px solid var(--s500); outline-offset: 2px; }
+    .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
+    .fact { background: #fff; border-radius: var(--radius); padding: 14px; border: 1px solid var(--gray100); }
+    .fact strong { display: block; font-size: 28px; color: var(--p700); line-height: 1.2; }
+    .fact span { font-size: 14px; color: var(--gray700); }
+
+    /* 卡片 */
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { background: #fff; border-radius: var(--radius); padding: 18px; border: 1px solid var(--gray100); }
+    .card h3 { font-size: 18px; margin-bottom: 6px; }
+    .card p + p { margin-top: 8px; }
+    .card ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .card li + li { margin-top: 4px; }
+    .pain .num { font-size: 13px; font-weight: 700; color: var(--r600); background: var(--r50); border-radius: 999px; padding: 1px 10px; display: inline-block; margin-bottom: 8px; }
+    .pain blockquote { margin: 10px 0 0; padding: 8px 12px; border-left: 4px solid var(--s500); background: var(--s50); border-radius: 0 10px 10px 0; font-size: 14px; }
+    .fix { border-top: 4px solid var(--p500); }
+    .fix .icon { width: 40px; height: 40px; border-radius: 12px; background: var(--p50); color: var(--p700); display: grid; place-items: center; margin-bottom: 10px; }
+    .fix .icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .maps { margin-top: 10px; font-size: 14px; color: var(--gray700); }
+    .maps b { color: var(--p700); }
+
+    /* 功能 */
+    .feature { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 14px; background: #fff; border: 1px solid var(--gray100); border-radius: var(--radius); padding: 18px; }
+    .feature + .feature { margin-top: 12px; }
+    .feature .no { width: 40px; height: 40px; border-radius: 50%; background: var(--p500); color: #fff; font-weight: 700; display: grid; place-items: center; grid-row: span 3; }
+    .feature h3 { font-size: 19px; }
+    .feature .where { font-size: 13px; color: var(--gray500); }
+    .feature ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .feature li + li { margin-top: 4px; }
+    .feature .try { margin-top: 10px; }
+    .chip { display: inline-block; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 0 10px; }
+    .chip.ok { background: var(--g50); color: var(--g700); }
+    .chip.ask { background: var(--s50); color: var(--s700); }
+    .chip.no { background: var(--gray100); color: var(--gray700); }
+
+    /* 表格 */
+    .table-wrap { overflow-x: auto; background: #fff; border-radius: var(--radius); border: 1px solid var(--gray100); }
+    table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 15px; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--gray100); vertical-align: top; }
+    th { background: var(--p50); color: var(--p900); font-size: 14px; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    td .muted { display: block; font-size: 13px; }
+
+    /* 架構圖 */
+    .arch { background: #fff; border: 1px solid var(--gray100); border-radius: var(--radius); padding: 20px; display: grid; gap: 14px; }
+    .tier { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: stretch; }
+    .tier > .label { font-weight: 700; color: var(--gray700); font-size: 14px; display: flex; flex-direction: column; justify-content: center; }
+    .tier > .label span { font-weight: 400; color: var(--gray500); font-size: 13px; }
+    .boxes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .box { flex: 1 1 160px; border-radius: 12px; padding: 10px 12px; border: 2px solid var(--gray300); background: var(--gray50); font-size: 14px; }
+    .box b { display: block; font-size: 15px; }
+    .box.app { border-color: var(--s500); background: var(--s50); }
+    .box.ms { border-color: var(--p500); background: var(--p50); }
+    .box.dev { border-style: dashed; }
+    .arrow { text-align: center; color: var(--gray500); font-size: 13px; }
+    .arrow::before { content: "↕"; display: block; font-size: 20px; line-height: 1; color: var(--p500); }
+
+    .bridge { width: 100%; }
+    .bridge td:first-child { white-space: nowrap; }
+
+    /* 隱私 */
+    .checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .checklist li { background: #fff; border: 1px solid var(--gray100); border-radius: 12px; padding: 12px 14px 12px 46px; position: relative; }
+    .checklist li::before { content: "✓"; position: absolute; left: 14px; top: 11px; width: 22px; height: 22px; border-radius: 50%; background: var(--g50); color: var(--g700); font-weight: 700; display: grid; place-items: center; font-size: 13px; }
+
+    /* Demo */
+    .prep { background: var(--s50); border: 1px solid #f3dca8; border-radius: var(--radius); padding: 16px 18px; }
+    .prep h3 { color: var(--s700); font-size: 17px; margin-bottom: 6px; }
+    .prep ol { margin: 0; padding-left: 1.3em; }
+    .timeline { list-style: none; margin: 18px 0 0; padding: 0; counter-reset: step; }
+    .step { position: relative; padding: 0 0 22px 56px; }
+    .step::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--p700); color: #fff; font-weight: 700; display: grid; place-items: center; }
+    .step::after { content: ""; position: absolute; left: 19px; top: 44px; bottom: 4px; width: 2px; background: var(--p100); }
+    .step:last-child::after { display: none; }
+    .step .head { display: flex; gap: 8px 12px; align-items: baseline; flex-wrap: wrap; }
+    .step h3 { font-size: 19px; }
+    .time { font-size: 13px; font-weight: 700; color: var(--p700); background: var(--p50); border-radius: 999px; padding: 0 10px; }
+    .persona { font-size: 13px; font-weight: 700; border-radius: 999px; padding: 0 10px; background: var(--s50); color: var(--s700); }
+    .step .body { background: #fff; border: 1px solid var(--gray100); border-radius: var(--radius); padding: 14px 16px; margin-top: 8px; display: grid; gap: 10px; }
+    .step .do, .step .say, .step .see { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
+    .step .do > b, .step .say > b, .step .see > b { font-size: 13px; color: var(--gray500); padding-top: 2px; }
+    .step .say p { background: var(--p50); border-radius: 10px; padding: 8px 12px; }
+    .step ol, .step ul { margin: 0; padding-left: 1.2em; }
+    .qa { display: grid; gap: 10px; }
+    .qa details { background: #fff; border: 1px solid var(--gray100); border-radius: 12px; padding: 12px 16px; }
+    .qa summary { cursor: pointer; font-weight: 700; }
+    .qa details p { margin-top: 8px; color: var(--gray700); }
+    .short { background: #fff; border: 2px solid var(--p100); border-radius: var(--radius); padding: 16px 18px; }
+    .short ol { margin: 6px 0 0; padding-left: 1.3em; }
+
+    /* 手機框 */
+    .phone { width: 360px; margin: 0 auto; background: #11181c; border-radius: 44px; padding: 14px; box-shadow: 0 20px 50px rgba(17, 24, 28, .25); }
+    .phone .screen { position: relative; border-radius: 32px; overflow: hidden; background: #fff; height: min(720px, calc(100vh - 170px)); min-height: 520px; }
+    .phone iframe { border: 0; width: 100%; height: 100%; display: block; }
+    .phone-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 12px auto 0; width: 360px; }
+    .phone-bar p { font-size: 13px; color: var(--gray500); }
+    .now { margin: 8px auto 0; width: 360px; font-size: 13px; color: var(--p700); min-height: 1.5em; text-align: center; }
+
+    footer { border-top: 1px solid var(--gray100); padding: 24px 0 40px; margin-top: 40px; font-size: 14px; color: var(--gray500); }
+    footer p + p { margin-top: 6px; }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      aside.phone-col { display: none; }
+      .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .grid3, .grid2 { grid-template-columns: minmax(0, 1fr); }
+      .tier { grid-template-columns: minmax(0, 1fr); }
+      .phone, .phone-bar, .now { width: 100%; max-width: 360px; }
+      .phone { padding: 10px; border-radius: 36px; }
+      .feature { grid-template-columns: minmax(0, 1fr); }
+      .feature .no { grid-row: auto; }
+      .step { padding-left: 0; }
+      .step::before { position: static; display: inline-grid; width: 32px; height: 32px; margin-bottom: 6px; }
+      .step::after { display: none; }
+      .step .do, .step .say, .step .see { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      section.block > h2 { font-size: 23px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <nav class="topnav" aria-label="頁面導覽">
+    <div class="in">
+      <a class="brand" href="#top">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#279EAE" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 11h16v8.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5V11Z"/><path d="M3 8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3H3V8Z"/><path d="M12 7v14"/><path d="M12 7S10.5 3 8.3 3.8C6.5 4.4 7.5 7 12 7Zm0 0s1.5-4 3.7-3.2C17.5 4.4 16.5 7 12 7Z"/></svg>
+        拿得到・服務介紹
+      </a>
+      <a class="nav" href="#problem">問題</a>
+      <a class="nav" href="#features">功能</a>
+      <a class="nav" href="#benefits">補助</a>
+      <a class="nav" href="#tech">技術</a>
+      <a class="nav" href="#privacy">隱私</a>
+      <a class="nav" href="#demo"><b>Demo 流程</b></a>
+    </div>
+  </nav>
+
+  <div class="layout" id="top">
+    <article>
+      <!-- 開場 -->
+      <header class="hero">
+        <span class="tag">2026 臺北秋季程式設計節・城市通微服務・題目「拿不到」#資源限制</span>
+        <h1>拿得到</h1>
+        <p class="sub">用城市通的實名資料，主動找出你和家人可以領的補助；長輩、孩子、身障的家人，可以透過<strong>經過同意的代理人</strong>收通知、查資格、代辦申請。</p>
+        <div class="btns">
+          <a class="btn" href="./" target="_blank" rel="noopener">開啟實際服務</a>
+          <a class="btn secondary" href="#demo">看 Demo 流程</a>
+        </div>
+        <div class="facts" aria-label="服務重點數字">
+          <div class="fact"><strong>4</strong><span>項臺北市補助，規則逐條對照官方來源</span></div>
+          <div class="fact"><strong>3</strong><span>種代理對象：長者、兒童、身心障礙</span></div>
+          <div class="fact"><strong>0</strong><span>筆個資上傳，比對都在手機上完成</span></div>
+          <div class="fact"><strong>24</strong><span>個區公所、戶政事務所窗口資料（data.taipei）</span></div>
+        </div>
+      </header>
+
+      <!-- 問題 -->
+      <section class="block" id="problem" aria-labelledby="h-problem">
+        <p class="kicker">為什麼「拿不到」</p>
+        <h2 id="h-problem">補助明明有，最需要的人卻拿不到</h2>
+        <p class="lead">資源有限時，先知道、有空跑、會用網路的人先拿到；資訊落後、上班時間走不開、沒有手機的人被排擠在外。</p>
+        <div class="grid3">
+          <div class="card pain">
+            <span class="num">不知道</span>
+            <h3>資訊落差</h3>
+            <p>補助散在各局處網頁，要自己找、自己判斷資格。</p>
+            <blockquote>中低收入長輩假牙補助，申請人數連 3 年下滑，議員指出是宣傳不足、資訊落差。<a href="https://udn.com/news/story/7323/9357002" target="_blank" rel="noopener">聯合報</a></blockquote>
+          </div>
+          <div class="card pain">
+            <span class="num">跑不了</span>
+            <h3>只有上班時間能辦</h3>
+            <p>臨櫃只在平日上班時間；長輩行動不便、沒有智慧型手機，上班族請不了假。</p>
+            <blockquote>臺北市個人上網率逾 9 成，65 歲以上長者只有 43%。<a href="https://www.bnext.com.tw/article/75438/stp" target="_blank" rel="noopener">數位時代</a></blockquote>
+          </div>
+          <div class="card pain">
+            <span class="num">搶不到・接不到</span>
+            <h3>先到先得與聯絡不上</h3>
+            <p>名額依郵戳先後錄取；地址、電話有誤聯絡不上就喪失資格。</p>
+            <blockquote>電腦補助 106～108 年約 3%（約 40 戶）錄取後因付不出款項而放棄。<a href="https://www.msjh.tp.edu.tw/uploads/1588740314785cKuuXfGp.pdf" target="_blank" rel="noopener">社會局公文</a></blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- 解法 -->
+      <section class="block" aria-labelledby="h-fix">
+        <p class="kicker">我們的做法</p>
+        <h2 id="h-fix">從「人找補助」變成「補助找人」，再讓家人幫忙跑</h2>
+        <p class="lead">城市通使用者都完成實名驗證，App 已經知道你的年齡、戶籍、行政區。拿得到直接用這些資料比對，不用再填一次表。</p>
+        <div class="grid3">
+          <div class="card fix">
+            <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/><path d="m8.4 11 1.8 1.8 3.4-3.6"/></svg></div>
+            <h3>主動比對</h3>
+            <p>讀取城市通實名資料，自動算出「可能符合／再回答幾題／不符合」。缺的條件一次只問一題，先問影響最多補助的那題。</p>
+            <p class="maps">解決 <b>不知道</b></p>
+          </div>
+          <div class="card fix">
+            <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.6c.5-.1 1-.2 1.5-.2 2.4 0 4 1.9 4 4.6"/></svg></div>
+            <h3>家人代理</h3>
+            <p>沒有手機的長輩可以到區公所臨櫃授權；孩子由監護人代理；成年家人在自己的城市通按同意，並可只開放部分權限、隨時撤銷。</p>
+            <p class="maps">解決 <b>跑不了</b>・<b>沒有數位設備</b>・<b>保留實體管道</b></p>
+          </div>
+          <div class="card fix">
+            <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2H4.5l1.5-2Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div>
+            <h3>提醒與辦事小卡</h3>
+            <p>期限倒數、滿 65 歲等生命事件提早通知，本人和代理人都收得到；臨櫃要帶的東西整理成小卡，拿給承辦人員看就好。</p>
+            <p class="maps">解決 <b>錯過期限</b>・<b>聯絡不上</b>・<b>跑一趟沒辦成</b></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 功能 -->
+      <section class="block" id="features" aria-labelledby="h-features">
+        <p class="kicker">功能說明</p>
+        <h2 id="h-features">五個畫面，從「知道」到「辦成」</h2>
+        <p class="lead">服務放在城市通「城市服務」第一個釘選位置，以 WebView 開啟。字級 17px、按鈕高 48px，配色沿用城市通色票，長輩也看得清楚、按得到。</p>
+
+        <div class="feature">
+          <span class="no" aria-hidden="true">1</span>
+          <h3>補助清單：你可能可以領的補助</h3>
+          <p class="where">分頁「補助」・路徑 <code>#/</code></p>
+          <ul>
+            <li>上方切換「我／媽媽／女兒／弟弟」，同一個畫面查自己或家人。</li>
+            <li>摘要三格：<span class="chip ok">✓ 可能符合</span> <span class="chip ask">? 再回答幾題</span> <span class="chip no">✕ 不符合</span>，並說明原因（例如「原因：年滿 65 歲」）。</li>
+            <li>「回答一題，就能知道更多結果」：系統挑出影響最多補助、而且離結論最近的那一題。已列冊的低收入戶，就不會再被問收入與財產。</li>
+            <li>代理家人還沒同意時，只顯示「等待同意」，看不到任何資格結果。</li>
+          </ul>
+          <div class="try"><button type="button" class="btn small secondary" data-go="#/" data-as="self">在手機上看</button></div>
+        </div>
+
+        <div class="feature">
+          <span class="no" aria-hidden="true">2</span>
+          <h3>補助詳情：條件、地點、文件一次看完</h3>
+          <p class="where">點任一補助・路徑 <code>#/b/補助代碼</code></p>
+          <ul>
+            <li><b>條件逐條</b>標示 ✓ ✕ ?，還不知道的條件直接在旁邊回答。</li>
+            <li><b>去哪裡申請</b>：依對象的戶籍行政區帶出最近的區公所或戶政事務所，可以直接「撥電話」「開地圖」（呼叫城市通原生功能）。</li>
+            <li><b>要帶的文件</b>可以打勾；代辦時另外列出「你（代理人）另外要帶」的委任書、印章等。生育補助會標明申請人是寶寶的媽媽、爸爸可以拿委託書代辦。</li>
+            <li>每項補助附<b>官方來源與查證日期</b>，查不到的地方寫在「尚未確認」，不假裝知道。</li>
+          </ul>
+          <div class="try"><button type="button" class="btn small secondary" data-go="#/b/senior-card" data-as="mom">看媽媽的敬老愛心卡</button></div>
+        </div>
+
+        <div class="feature">
+          <span class="no" aria-hidden="true">3</span>
+          <h3>辦事小卡：到櫃台拿出來就好</h3>
+          <p class="where">詳情頁「產生辦事小卡」・路徑 <code>#/card/補助代碼</code></p>
+          <ul>
+            <li>大字列出補助名稱、對象、申請人、代辦人、窗口地址電話與要帶的文件。</li>
+            <li>附 QR Code（不含身分證字號等個資），「複製文字」可以貼到 LINE 傳給家人。</li>
+            <li>沒有開放「代為申請」權限的家人，按鈕會停用，尊重本人的決定。</li>
+          </ul>
+          <div class="try"><button type="button" class="btn small secondary" data-go="#/card/senior-card" data-as="mom">看媽媽的辦事小卡</button></div>
+        </div>
+
+        <div class="feature">
+          <span class="no" aria-hidden="true">4</span>
+          <h3>家人與代理：經過同意、權限分開、留下紀錄</h3>
+          <p class="where">分頁「家人與代理」・路徑 <code>#/family</code></p>
+          <ul>
+            <li>三種同意方式：對方在自己的城市通按同意；沒有手機的長輩到<b>區公所臨櫃</b>辦理；孩子由<b>監護人</b>代理。</li>
+            <li>四種權限可以分開開關：接收補助通知、查詢資格、代為申請、代為領取。</li>
+            <li>撤銷代理要按兩次確認。每一次代辦（代答問題、產生小卡、同意、撤銷）都寫進<b>代理紀錄</b>，被代理的家人也看得到。</li>
+          </ul>
+          <div class="try"><button type="button" class="btn small secondary" data-go="#/family">在手機上看</button></div>
+        </div>
+
+        <div class="feature">
+          <span class="no" aria-hidden="true">5</span>
+          <h3>通知：期限與生命事件先提醒</h3>
+          <p class="where">分頁「通知」・路徑 <code>#/notices</code></p>
+          <ul>
+            <li>排序：期限與生命事件 → 可以申請的補助 → 還要回答的問題。</li>
+            <li>生育補助顯示「出生後 60 日內，還剩 N 天」；家人 64 歲時提醒「今年幾月幾日滿 65 歲」，可以先準備照片。</li>
+            <li>「傳到手機通知」呼叫城市通的系統通知；開放通知權限的家人，提醒代理人也收得到，不怕長輩漏接電話而喪失資格。</li>
+          </ul>
+          <div class="try"><button type="button" class="btn small secondary" data-go="#/notices">在手機上看</button></div>
+        </div>
+      </section>
+
+      <!-- 補助 -->
+      <section class="block" id="benefits" aria-labelledby="h-benefits">
+        <p class="kicker">目前收錄</p>
+        <h2 id="h-benefits">四項臺北市補助（隊內投票選出）</h2>
+        <p class="lead">規則在 2026-11-07 逐條對照臺北市法規與社會局、戶政事務所官方頁面。新增補助只要加一筆 JSON 規則，不必改程式。</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>補助</th><th>主要條件</th><th>金額</th><th>App 怎麼判斷</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><b>敬老愛心卡</b><span class="muted">社會局・任一區公所</span></td>
+                <td>設籍臺北市，年滿 65 歲或原住民年滿 55 歲</td>
+                <td>每月 600 點（115 年 7 月起）</td>
+                <td>生日、戶籍、原住民身分全部來自城市通，<b>不用回答任何問題</b></td>
+              </tr>
+              <tr>
+                <td><b>生育補助</b><span class="muted">民政局・戶政事務所</span></td>
+                <td>寶寶在臺北市完成出生登記，60 日內申請；父或母設籍北北基滿 10 個月</td>
+                <td>第 1 胎 4 萬、第 2 胎 4.5 萬、第 3 胎起 5 萬</td>
+                <td>代理的寶寶從生日自動算出還剩幾天；只問設籍 10 個月</td>
+              </tr>
+              <tr>
+                <td><b>身心障礙者生活補助</b><span class="muted">社會局・戶籍地區公所</span></td>
+                <td>持身障證明、沒有住公費安置機構；列冊低收／中低收，或收入、財產在標準內</td>
+                <td>每月 4,049～9,485 元（115 年度）</td>
+                <td>先問列冊身分，已列冊就跳過收入與財產題</td>
+              </tr>
+              <tr>
+                <td><b>低收入戶生活扶助</b><span class="muted">社會局・區公所或台北服務通</span></td>
+                <td>列冊低收入戶，或全家每人每月收入 20,744 元以下且財產在上限內</td>
+                <td>依類別，例如第 0 類每人每月 20,744 元</td>
+                <td>列冊者直接判斷；其他人自評收入與財產</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 技術 -->
+      <section class="block" id="tech" aria-labelledby="h-tech">
+        <p class="kicker">技術架構</p>
+        <h2 id="h-tech">一個可獨立部署的微服務，掛進城市通</h2>
+        <p class="lead">前端是不需要建置的原生 ES modules，後端用 Hono，同一份程式可以部署到 Cloudflare Workers，也可以用 Node.js 或 Docker 在市府機房執行。</p>
+
+        <div class="arch" role="img" aria-label="架構：城市通 App 透過 WebView 開啟拿得到前端，前端用 JS bridge 取得實名資料與原生功能，規則引擎在手機上執行，靜態資源由 Cloudflare Workers 或 Docker 提供。">
+          <div class="tier">
+            <div class="label">城市通 App<span>Flutter</span></div>
+            <div class="boxes">
+              <div class="box app"><b>城市服務入口</b>釘選第一個「拿得到」</div>
+              <div class="box app"><b>JS bridge</b><code>userinfo</code> <code>notify</code> <code>phone_call</code> <code>launch_map</code></div>
+            </div>
+          </div>
+          <div class="arrow">WebView・<code>flutterObject.postMessage</code></div>
+          <div class="tier">
+            <div class="label">拿得到前端<span>在使用者手機上執行</span></div>
+            <div class="boxes">
+              <div class="box ms"><b>規則引擎</b><code>engine.js</code> 純函式、三值判斷</div>
+              <div class="box ms"><b>畫面</b>hash 路由 5 個畫面</div>
+              <div class="box ms"><b>本機儲存</b>家人、回答、代理紀錄只存在 localStorage</div>
+            </div>
+          </div>
+          <div class="arrow">只下載靜態檔與規則，不上傳個資</div>
+          <div class="tier">
+            <div class="label">服務端<span>Hono</span></div>
+            <div class="boxes">
+              <div class="box"><b>Cloudflare Workers</b>靜態資源與 <code>/api/health</code></div>
+              <div class="box dev"><b>Node.js／Docker</b>同一份程式，可搬到市府機房</div>
+              <div class="box"><b>規則與窗口資料</b><code>benefits.json</code> <code>questions.json</code> <code>offices.json</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:14px">
+          <div class="card">
+            <h3>規則引擎怎麼判斷</h3>
+            <ul>
+              <li>每個條件只有三種結果：<b>符合、不符合、還不知道</b>。支援「任一成立」「全部成立」巢狀組合，例如「65 歲，或原住民且 55 歲」。</li>
+              <li>補助結果：有任何條件不符合就是不符合；沒有不符合、但有不知道的，就是「再回答幾題」。</li>
+              <li><b>下一題怎麼挑</b>：先問被最多補助需要的條件；一樣多時，先問離結論最近的補助，讓使用者最快看到結果。</li>
+              <li>「適用對象」與法定資格分開：78 歲的媽媽不會被問「有沒有新生兒」。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>品質與可維護</h3>
+            <ul>
+              <li>規則是資料不是程式：條件、文件、窗口、來源網址、查證日期、尚未確認事項都寫在 JSON。</li>
+              <li><b>16 個自動測試</b>（Node.js test runner）：驗證引擎邏輯、每個條件都有對應問題或來自實名資料、三位示範人物的判斷結果。</li>
+              <li>不在城市通裡開啟時，自動改用測試帳號，瀏覽器也能完整試用。</li>
+              <li>開機診斷：載入失敗或逾時會顯示原因與重新載入按鈕，不會只剩白畫面。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table class="bridge">
+            <thead><tr><th>城市通功能</th><th>拿得到怎麼用</th></tr></thead>
+            <tbody>
+              <tr><td><code>userinfo</code></td><td>讀取實名資料：姓名、生日、是否設籍臺北市、原住民身分、戶籍行政區、驗證等級</td></tr>
+              <tr><td><code>notify</code></td><td>「提醒我」與通知頁的「傳到手機通知」</td></tr>
+              <tr><td><code>phone_call</code></td><td>一鍵撥打區公所、戶政事務所電話</td></tr>
+              <tr><td><code>launch_map</code></td><td>用手機內建地圖開啟窗口地址（Android 系統預設地圖、iOS Apple 地圖）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 隱私 -->
+      <section class="block" id="privacy" aria-labelledby="h-privacy">
+        <p class="kicker">隱私與信任</p>
+        <h2 id="h-privacy">比對資格要用到敏感資料，所以我們不收</h2>
+        <ul class="checklist" style="margin-top:14px">
+          <li><b>比對在手機上完成</b>：實名資料、收入自評、家人資料都不上傳伺服器，伺服器只提供網頁與公開的規則。</li>
+          <li><b>代理一定要同意</b>：對方沒同意前看不到任何結果；權限分四種，可以隨時調整或撤銷。</li>
+          <li><b>代辦留紀錄</b>：誰在什麼時候替誰做了什麼，被代理的家人看得到。</li>
+          <li><b>辦事小卡不含身分證字號</b>，QR Code 只有補助名稱、申請人、地點與文件清單。</li>
+          <li><b>結果僅供參考</b>：每項都標示官方來源與查證日期，以受理單位審核為準。</li>
+        </ul>
+      </section>
+
+      <!-- 資料與授權 -->
+      <section class="block" aria-labelledby="h-data">
+        <p class="kicker">資料來源與授權</p>
+        <h2 id="h-data">開放資料、開源套件、沒有用到 AI</h2>
+        <div class="grid2" style="margin-top:14px">
+          <div class="card">
+            <h3>資料</h3>
+            <ul>
+              <li>補助規則：臺北市法規查詢系統、社會局、中正萬華區戶政事務所、全國法規資料庫官方頁面（2026-11-07 查證）</li>
+              <li>區公所、戶政事務所窗口：<a href="https://data.taipei" target="_blank" rel="noopener">臺北市資料大平臺</a>「各機關學校聯絡資訊」，依政府資料開放授權條款第 1 版使用</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>套件與授權</h3>
+            <ul>
+              <li>Hono（MIT）、@hono/node-server（MIT）、qrcode-generator（MIT，Kazuhiko Arase）</li>
+              <li>本服務以 AGPL-3.0 釋出，原始碼公開</li>
+              <li>執行時<b>沒有使用任何 AI 模型</b>，資格判斷是可追溯的規則，每一步都能對照官方條文</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Demo -->
+      <section class="block" id="demo" aria-labelledby="h-demo">
+        <p class="kicker">Demo 流程</p>
+        <h2 id="h-demo">決選 5 分鐘：一個人，幫一家人拿到補助</h2>
+        <p class="lead">主角是 37 歲上班族金大森（城市通實名帳號）。他要照顧獨居的媽媽、剛出生的女兒，以及有身障證明的弟弟。全程使用實際產品操作，不放投影片。每一步都可以按「在手機上執行」：寬螢幕時右邊的手機會跳到那個畫面，手機上會開新分頁。</p>
+
+        <div class="prep">
+          <h3>上台前準備</h3>
+          <ol>
+            <li>城市通 App 先開過一次「拿得到」暖機（第一次載入約 10 秒），再回到首頁待命。</li>
+            <li>在「家人與代理」最下面按「重設示範資料」，讓弟弟回到「等待同意」、代理紀錄清空。</li>
+            <li>確認網路正常；手機音量關閉、勿擾模式開啟，但保留城市通通知。</li>
+            <li>備援：筆電開這一頁，右邊的手機就是同一個服務，App 出狀況時改用這裡展示。</li>
+          </ol>
+          <div class="btns" style="margin-top:10px"><button type="button" class="btn small" data-reset>重設右邊手機的示範資料</button></div>
+        </div>
+
+        <ol class="timeline">
+          <li class="step">
+            <div class="head"><h3>開場：補助為什麼「拿不到」</h3><span class="time">0:00–0:40</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><p>手機停在城市通首頁，先不點。</p></div>
+              <div class="say"><b>台詞</b><p>「臺北市的補助不少，但長輩假牙補助連三年申請人數下滑；電腦補助有 3% 的人錄取了卻付不出錢放棄。拿不到的人，不是不符合，而是不知道、跑不了、接不到通知。城市通每個人都實名驗證過，所以我們做了『拿得到』。」</p></div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="head"><h3>自己：一打開就知道能領什麼</h3><span class="time">0:40–1:20</span><span class="persona">本人</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><ol><li>城市服務 → 點第一個「拿得到」。</li><li>停在補助清單，指出上方「依城市通實名資料比對」與三格摘要。</li><li>點一張「不符合」的補助，指出原因寫得很清楚。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「不用填表，App 已經知道我的年齡和戶籍。補助分成可能符合、再回答幾題、不符合，不符合也會告訴你原因。」</p></div>
+              <div class="see"><b>按鈕</b><p><button type="button" class="btn small secondary" data-go="#/" data-as="self">在手機上執行</button></p></div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="head"><h3>媽媽：沒有手機的獨居長輩</h3><span class="time">1:20–2:30</span><span class="persona">長者</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><ol><li>分頁「家人與代理」→ 指出媽媽是「臨櫃（文山區公所）」授權、四個權限。</li><li>按「查看媽媽的補助」→ 敬老愛心卡 ✓ 可能符合。</li><li>點進敬老愛心卡：條件全部 ✓、最近的文山區公所、撥電話與開地圖、要帶的文件、「你（代理人）另外要帶」。</li><li>按「產生辦事小卡」。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「媽媽 78 歲、獨居、沒有智慧型手機。她只要到區公所臨櫃授權一次，之後我就能幫她查、幫她辦。系統不會問 78 歲的媽媽有沒有生小孩。到了櫃台，我把這張小卡拿給承辦人員，要帶的東西一次帶齊，不用跑第二趟。」</p></div>
+              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/family">家人與代理</button><button type="button" class="btn small secondary" data-go="#/b/senior-card" data-as="mom">敬老愛心卡</button><button type="button" class="btn small secondary" data-go="#/card/senior-card" data-as="mom">辦事小卡</button></p></div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="head"><h3>女兒：60 天內一定要辦的生育補助</h3><span class="time">2:30–3:20</span><span class="persona">兒童</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><ol><li>補助清單上方切到「女兒」→ 生育補助 ✓ 可能符合，沒有被問任何問題。</li><li>點進去：指出「寶寶的媽媽要帶的文件」與「爸爸可以拿委託書代辦」。</li><li>分頁「通知」→ 第一則「生育補助要在寶寶出生後 60 日內申請，還剩 N 天」→ 按「傳到手機通知」，展示城市通的系統通知。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「女兒 10 月 20 日出生，系統從生日算出還在 60 天內，直接判斷可能符合。申請人其實是媽媽，App 也寫清楚爸爸可以帶委託書去辦。期限倒數會推到手機，不會因為忙就錯過。」</p></div>
+              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/b/birth-grant" data-as="daughter">生育補助</button><button type="button" class="btn small secondary" data-go="#/notices">通知</button></p></div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="head"><h3>弟弟：本人同意，也保有自己的決定</h3><span class="time">3:20–4:20</span><span class="persona">身心障礙</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><ol><li>切到「弟弟」→ 顯示「等待弟弟同意代理」，什麼結果都看不到。</li><li>按「示範：金小華已同意」→ 低收入戶生活扶助 ✓；身心障礙者生活補助只剩一題。</li><li>回答「目前住在家裡」→ 身障生活補助變成 ✓ 可能符合。</li><li>點進去：「產生辦事小卡」是停用的，因為弟弟只開放查詢，沒有開放代為申請。</li><li>回「家人與代理」→ 代理紀錄列出剛剛的同意與代答。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「弟弟是成年人，要他自己在城市通按同意，我才看得到。他已經是列冊低收入戶，所以不用再問收入財產，只差一題就有結果。他只讓我查、不讓我代辦，App 就照他的意思做；我做的每一件事，他都看得到紀錄。」</p></div>
+              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/" data-as="brother">弟弟的補助</button><button type="button" class="btn small secondary" data-go="#/b/disability-allowance" data-as="brother">身障生活補助</button><button type="button" class="btn small secondary" data-go="#/family">代理紀錄</button></p></div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="head"><h3>收尾：隱私、資料、可以擴充</h3><span class="time">4:20–5:00</span></div>
+            <div class="body">
+              <div class="do"><b>操作</b><p>回到補助清單，指出最下面「比對在這支手機上完成，個資不會上傳」，再點一項補助最下面的官方來源。</p></div>
+              <div class="say"><b>台詞</b><p>「所有比對都在手機上做，個資不上傳。四項補助的規則都逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到把『人找補助』變成『補助找人』，再讓家人幫忙把最後一段路走完。」</p></div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="short" style="margin-top:8px">
+          <h3>初選逐桌版（約 2 分鐘）</h3>
+          <ol>
+            <li>一句話：城市通實名資料主動比對補助，家人經過同意可以代辦。</li>
+            <li>打開拿得到 → 補助清單三格摘要（本人）。</li>
+            <li>家人與代理 → 媽媽臨櫃授權 → 敬老愛心卡 → 辦事小卡。</li>
+            <li>通知 → 女兒生育補助 60 天倒數 → 傳到手機通知。</li>
+            <li>收尾：個資不上傳、規則對照官方來源。評審有興趣再展示弟弟的同意與權限。</li>
+          </ol>
+        </div>
+
+        <h3 style="margin:28px 0 10px;font-size:20px">評審可能會問</h3>
+        <div class="qa">
+          <details><summary>判斷錯了怎麼辦？資料多正確？</summary><p>畫面一律寫「可能符合」，最後以受理單位審核為準。每項補助附官方來源與查證日期，查不到的寫在「尚未確認」。規則是可追溯的條件，不是黑箱模型。</p></details>
+          <details><summary>收入、財產這些敏感資料怎麼處理？</summary><p>只在使用者手機上計算與儲存，不上傳伺服器。伺服器只提供網頁和公開的規則檔。</p></details>
+          <details><summary>代理會不會被濫用？</summary><p>一定要本人同意（App 按同意、臨櫃或監護人），權限分四種可以只開一部分，隨時撤銷，每次代辦都有紀錄給本人看。正式上線可以接市府的委任或監護資料做驗證。</p></details>
+          <details><summary>沒有手機的長輩怎麼用？</summary><p>不需要手機。長輩到區公所臨櫃授權一次，後續由家人代理接收通知與準備文件；臨櫃管道依然保留，辦事小卡讓一次跑就辦成。</p></details>
+          <details><summary>跟現有的台北通、1999 有什麼不同？</summary><p>現有管道多半要自己先知道有哪些補助、再去查。拿得到用城市通已驗證的資料主動比對，並把家人代理、期限提醒、臨櫃準備串成一條流程。</p></details>
+          <details><summary>怎麼擴充更多補助？市府要怎麼接手？</summary><p>新增補助只要在 <code>benefits.json</code> 加一筆規則，測試會檢查每個條件都有對應問題與官方來源。服務可以用 Docker 在市府機房執行，不綁定 Cloudflare。</p></details>
+        </div>
+      </section>
+
+      <footer>
+        <p>拿得到・2026 臺北秋季程式設計節 城市通微服務大黑客松作品・AGPL-3.0</p>
+        <p>本頁與服務中的資格判斷僅供參考，以臺北市政府各受理單位審核為準。</p>
+      </footer>
+    </article>
+
+    <aside class="phone-col" aria-label="實際服務預覽">
+      <div class="phone"><div class="screen"><iframe id="phone" src="./" title="拿得到實際服務" loading="lazy"></iframe></div></div>
+      <p class="now" id="now" aria-live="polite"></p>
+      <div class="phone-bar">
+        <p>這是實際服務，可以直接操作</p>
+        <button type="button" class="btn small secondary" data-go="#/" data-as="self">回首頁</button>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      var frame = document.getElementById('phone');
+      var now = document.getElementById('now');
+      var NAMES = { self: '本人', mom: '媽媽', daughter: '女兒', brother: '弟弟' };
+      function setKey(k, v) { try { localStorage.setItem('nadedao.' + k, JSON.stringify(v)); } catch (e) { /* 私密瀏覽：照樣切換畫面 */ } }
+      function clearAll() {
+        try {
+          Object.keys(localStorage).forEach(function (k) { if (k.indexOf('nadedao.') === 0) localStorage.removeItem(k); });
+        } catch (e) { /* ignore */ }
+      }
+      function narrow() { return window.matchMedia('(max-width: 1080px)').matches; }
+      function go(hash, as, label) {
+        if (as) setKey('current', as);
+        // 窄螢幕沒有右側手機：直接開新分頁顯示實際服務
+        if (narrow()) { window.open('./index.html' + hash, 'nadedao'); return; }
+        frame.src = './index.html?t=' + Date.now() + hash;
+        now.textContent = '手機畫面：' + (label || hash) + (as ? '（' + NAMES[as] + '）' : '');
+      }
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest('[data-go], [data-reset]');
+        if (!t) return;
+        if (t.hasAttribute('data-reset')) {
+          clearAll();
+          t.textContent = '已重設，弟弟回到等待同意';
+          if (!narrow()) go('#/family', null, '已重設示範資料');
+          return;
+        }
+        go(t.getAttribute('data-go'), t.getAttribute('data-as'), t.textContent.trim());
+      });
+    })();
+  </script>
+</body>
+</html>

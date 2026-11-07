@@ -81,5 +81,9 @@
         <string>This app needs photos access to get QR code from photo library</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>maps</string>
+		</array>
 	</dict>
 </plist>

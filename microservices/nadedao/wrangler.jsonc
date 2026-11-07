@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "townpass-nadedao",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-06",
+  "compatibility_flags": ["nodejs_compat"],
+  // public/ 是微服務網頁（比對在手機上完成）；/api/* 交給 Worker
+  "assets": {
+    "directory": "./public/",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true }
+}

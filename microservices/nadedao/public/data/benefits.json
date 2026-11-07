@@ -1,0 +1,156 @@
+[
+  {
+    "id": "birth-grant",
+    "name": "生育補助",
+    "agency": "臺北市政府民政局（各區戶政事務所受理）",
+    "summary": "寶寶在臺北市辦好出生登記後，可以依胎次領一次性的生育補助。",
+    "amount": "第 1 胎 4 萬元、第 2 胎 4.5 萬元、第 3 胎起每胎 5 萬元；死產不分胎次 4 萬元",
+    "relevantWhen": { "key": "age", "op": "<=", "value": 60, "label": "通常適用於有新生兒的家長（60 歲以下），不是法定年齡限制" },
+    "applicantRole": "寶寶的媽媽",
+    "applicantNote": "爸爸可以拿委託書代辦",
+    "notes": [
+      "申請人原則上是寶寶的媽媽；媽媽死亡、行方不明或登記未記載媽媽姓名時，才由爸爸申請。爸爸可以拿委託書代媽媽辦理。",
+      "要到辦理出生登記或寶寶設籍所在地的戶政事務所申請，可以在辦出生登記時一併申請。"
+    ],
+    "conditions": [
+      { "key": "citizen", "op": "==", "value": true, "label": "申請時設籍臺北市" },
+      { "key": "hasNewborn", "op": "==", "value": true, "label": "寶寶已在臺北市辦好出生登記，且還在出生次日起 60 日內" },
+      { "key": "residency10m", "op": "==", "value": true, "label": "爸爸或媽媽從寶寶出生（或預產日）前 10 個月起連續設籍北北基，申請時在臺北市" }
+    ],
+    "documents": ["申請書（戶政事務所現場填寫）", "申請人身分證明文件", "申請人金融機構帳戶影本"],
+    "proxyAllowed": true,
+    "proxyDocuments": ["代理人身分證明文件", "委託書（可填申請表的委託欄，或另附委託書）"],
+    "applyChannels": [{ "type": "臨櫃", "where": "householdOffice", "label": "辦理出生登記或寶寶設籍地的戶政事務所" }],
+    "period": "出生次日起 60 日內（有正當理由經戶政事務所核准，可延長到 1 年）",
+    "prepay": false,
+    "sourceUrls": [
+      "https://laws.gov.taipei/Law/LawSearch/LawArticleContent/FL081869",
+      "https://zzhr.gov.taipei/News_Content.aspx?n=1F8E58A3DFA80E14&sms=87415A8B9CE81B16&s=7CFAB551F7DA3852"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": [
+      "沒有查到線上申請管道",
+      "114 年 9 月 9 日修正前出生的寶寶適用舊規定，舊規定內容未查"
+    ]
+  },
+  {
+    "id": "senior-card",
+    "name": "敬老愛心卡",
+    "agency": "臺北市政府社會局（區公所社會課受理）",
+    "summary": "長輩每月有點數，可以搭公車、捷運、計程車，也能用在指定場館。",
+    "amount": "每月 600 點（115 年 7 月起，系統自動匯入，不必另外申請）",
+    "notes": [
+      "任一區公所都可以辦，不限戶籍地。",
+      "卡片每 6 個月要展期一次，可以在四大超商、捷運站查詢機或區公所辦理。"
+    ],
+    "conditions": [
+      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市" },
+      {
+        "anyOf": [
+          { "key": "age", "op": ">=", "value": 65, "label": "年滿 65 歲" },
+          { "allOf": [
+            { "key": "nativePeople", "op": "==", "value": true, "label": "原住民身分" },
+            { "key": "age", "op": ">=", "value": 55, "label": "年滿 55 歲" }
+          ], "label": "原住民年滿 55 歲" }
+        ],
+        "label": "年滿 65 歲，或原住民年滿 55 歲（年滿當月就能申請）"
+      }
+    ],
+    "documents": [
+      "國民身分證正本",
+      "2 吋彩色照片 1 張（建議帶 2 張）",
+      { "text": "戶口名簿（原住民身分）", "when": { "key": "nativePeople", "op": "==", "value": true } }
+    ],
+    "proxyAllowed": true,
+    "proxyDocuments": ["長輩的印章", "委任書", "代理人身分證明文件"],
+    "applyChannels": [{ "type": "臨櫃", "where": "districtOffice", "label": "任一區公所社會課（下面是離長輩最近的）" }],
+    "period": "年滿 65 歲（原住民 55 歲）當月任一工作天起",
+    "prepay": false,
+    "sourceUrls": [
+      "https://dosw.gov.taipei/cp.aspx?n=4683CD9EE2EB68B1",
+      "https://dosw.gov.taipei/News_Content.aspx?n=91F35523B74F69AC&sms=87415A8B9CE81B16&s=E402AC9050C9A477"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": [
+      "照片張數：社會局頁面寫 1 張，另一份官方問答寫 2 張，建議帶 2 張",
+      "「實際居住」App 無法確認"
+    ]
+  },
+  {
+    "id": "disability-allowance",
+    "name": "身心障礙者生活補助",
+    "agency": "臺北市政府社會局（戶籍地區公所社會課受理）",
+    "summary": "經濟條件較弱的身心障礙者，每月可以領生活補助。",
+    "amount": "115 年度每人每月：列冊低收入戶 極重度／重度／中度 9,485 元、輕度 5,437 元；列冊中低收入戶與一般申請者 極重度／重度／中度 5,437 元、輕度 4,049 元",
+    "notes": [
+      "已經是列冊低收入戶或中低收入戶的人，由社會局主動核發，不必另外申請。",
+      "與其他生活津貼只能擇一領取。"
+    ],
+    "conditions": [
+      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天" },
+      { "key": "disabilityCard", "op": "==", "value": true, "label": "持有臺北市核發或註記的身心障礙證明" },
+      { "key": "notInstitutionalized", "op": "==", "value": true, "label": "沒有住在政府公費安置的夜間或全日住宿型機構" },
+      {
+        "anyOf": [
+          { "key": "incomeStatus", "op": "in", "value": ["low", "midLow"], "label": "已是列冊低收入戶或中低收入戶" },
+          { "allOf": [
+            { "key": "income39960", "op": "==", "value": true, "label": "全家收入平均每人每月不超過 39,960 元" },
+            { "key": "assetsDisability", "op": "==", "value": true, "label": "全家財產在上限內" }
+          ], "label": "收入與財產都在標準內" }
+        ],
+        "label": "已列冊低收／中低收入戶，或全家收入、財產都在標準內"
+      }
+    ],
+    "documents": ["申請表", "申請人國民身分證正本", "台北富邦銀行或郵局存摺封面影本", "租屋者附租賃契約影本"],
+    "proxyAllowed": true,
+    "proxyDocuments": ["代申請人身分證明文件影本"],
+    "applyChannels": [{ "type": "臨櫃", "where": "districtOffice", "label": "戶籍所在地區公所社會課" }],
+    "period": "隨時可以申請；審核通過後，從文件備齊的當月開始發給",
+    "prepay": false,
+    "sourceUrls": [
+      "https://dosw.gov.taipei/cp.aspx?n=C764A5808F9A3B08",
+      "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050189"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": ["是否可以線上申請未確認", "收入與財產的計算範圍以區公所審核為準"]
+  },
+  {
+    "id": "low-income-living",
+    "name": "低收入戶生活扶助",
+    "agency": "臺北市政府社會局（戶籍地區公所社會課受理）",
+    "summary": "通過低收入戶資格審核後，依家庭收入分類，每月領生活扶助。",
+    "amount": "115 年度依收入分 0～4 類：例如全戶無收入（第 0 類）每人每月 20,744 元；每人每月政府救助金合計上限 29,500 元",
+    "notes": [
+      "已經是列冊低收入戶的人，每月由社會局核發，每年會辦理總清查。",
+      "也可以透過台北服務通線上申請。"
+    ],
+    "conditions": [
+      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天" },
+      {
+        "anyOf": [
+          { "key": "incomeStatus", "op": "==", "value": "low", "label": "已是列冊低收入戶" },
+          { "allOf": [
+            { "key": "income20744", "op": "==", "value": true, "label": "全家收入平均每人每月不超過 20,744 元" },
+            { "key": "assetsLowIncome", "op": "==", "value": true, "label": "全家財產在上限內" }
+          ], "label": "收入與財產都在標準內" }
+        ],
+        "label": "已列冊低收入戶，或全家收入、財產都在標準內"
+      }
+    ],
+    "documents": ["申請表", "申請人國民身分證正本", "新式戶口名簿影本（含詳細記事）", "台北富邦銀行或郵局存摺封面影本", "租屋者附租賃契約影本"],
+    "proxyAllowed": true,
+    "proxyDocuments": ["代申請人身分證明文件影本"],
+    "applyChannels": [
+      { "type": "臨櫃", "where": "districtOffice", "label": "戶籍所在地區公所社會課" },
+      { "type": "線上", "where": "url", "label": "台北服務通", "url": "https://service.taipei" }
+    ],
+    "period": "隨時可以申請；每年辦理總清查",
+    "prepay": false,
+    "sourceUrls": [
+      "https://dosw.gov.taipei/cp.aspx?n=E6D700BD37E78592",
+      "https://www.gov.taipei/News_Content.aspx?n=EEC70A4186D4C828&sms=87415A8B9CE81B16&s=8336A7914A3243BF"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": ["全家人口的計算範圍依社會救助法，App 無法計算，只能自評", "線上申請流程未實際走過"]
+  }
+]
