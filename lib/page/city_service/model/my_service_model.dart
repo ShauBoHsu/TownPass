@@ -29,6 +29,8 @@ enum MyServiceItemId {
   library,
   locationSearch,
   zoo,
+  helloCloudflare,
+  classifierLab,
   ;
 }
 
@@ -182,6 +184,21 @@ extension MyServiceIdExt on MyServiceItemId {
           icon: Assets.svg.iconZoo24.svg(),
           category: MyServiceCategory.explore,
           destinationUrl: '',
+        ),
+      MyServiceItemId.helloCloudflare => MyServiceItem(
+          title: 'Hello World',
+          description: 'Cloudflare Workers 微服務與雙向溝通測試',
+          icon: Assets.svg.iconHelloCloud24.svg(),
+          category: MyServiceCategory.other,
+          destinationUrl: 'https://townpass-hello.shawn-shaubo-hsu.workers.dev/',
+        ),
+      MyServiceItemId.classifierLab => MyServiceItem(
+          title: '分類模型測試',
+          description: '裝置端 embedding 判斷需求屬於哪個服務',
+          icon: Assets.svg.iconHelloCloud24.svg(),
+          category: MyServiceCategory.other,
+          destinationUrl: 'https://townpass-hello.shawn-shaubo-hsu.workers.dev/classify/',
+          forceWebViewTitle: '分類模型測試',
         ),
     };
   }
