@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>城市通 Hello World</title>
+  <style>
+    :root {
+      --primary-50: #edf8fa;
+      --primary-500: #5ab4c5;
+      --primary-700: #3b8c9c;
+      --secondary-500: #f5ba4b;
+      --gray-50: #f1f3f4;
+      --gray-200: #c9d1d6;
+      --gray-500: #738995;
+      --gray-800: #2e3a40;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      font-family: "PingFang TC", "Noto Sans TC", Roboto, system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    header {
+      background: var(--primary-500);
+      color: var(--white);
+      padding: 20px 16px;
+    }
+    header h1 { margin: 0; font-size: 24px; }
+    header p { margin: 4px 0 0; font-size: 14px; opacity: .9; }
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: var(--white);
+      color: var(--primary-700);
+    }
+    .badge.mock { background: var(--secondary-500); color: var(--gray-800); }
+    main { padding: 16px; display: grid; gap: 12px; max-width: 560px; margin: 0 auto; }
+    section {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--gray-200);
+    }
+    h2 { margin: 0 0 4px; font-size: 18px; }
+    .desc { margin: 0 0 12px; color: var(--gray-500); }
+    button {
+      min-height: 48px;
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary-500);
+      color: var(--white);
+      font: inherit;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:active { background: var(--primary-700); }
+    button:focus-visible { outline: 3px solid var(--secondary-500); outline-offset: 2px; }
+    pre {
+      margin: 12px 0 0;
+      padding: 12px;
+      background: var(--primary-50);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 12px;
+      min-height: 1em;
+    }
+    pre:empty { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hello World</h1>
+    <p>Cloudflare Workers × 城市通雙向溝通測試</p>
+    <span id="env" class="badge" role="status"></span>
+  </header>
+
+  <main>
+    <section aria-labelledby="h-api">
+      <h2 id="h-api">1. 呼叫後端 API</h2>
+      <p class="desc">GET /api/hello（與網頁同網域，不需 CORS）</p>
+      <button id="btn-api" type="button">呼叫 /api/hello</button>
+      <pre id="out-api" aria-live="polite"></pre>
+    </section>
+
+    <section aria-labelledby="h-user">
+      <h2 id="h-user">2. 取得使用者資訊</h2>
+      <p class="desc">postMessage name: userinfo</p>
+      <button id="btn-user" type="button">取得 userinfo</button>
+      <pre id="out-user" aria-live="polite"></pre>
+    </section>
+
+    <section aria-labelledby="h-loc">
+      <h2 id="h-loc">3. 取得定位</h2>
+      <p class="desc">postMessage name: location</p>
+      <button id="btn-loc" type="button">取得 location</button>
+      <pre id="out-loc" aria-live="polite"></pre>
+    </section>
+
+    <section aria-labelledby="h-notify">
+      <h2 id="h-notify">4. 發送手機通知</h2>
+      <p class="desc">postMessage name: notify，data: { title, content }</p>
+      <button id="btn-notify" type="button">發送通知</button>
+      <pre id="out-notify" aria-live="polite"></pre>
+    </section>
+  </main>
+
+  <script>
+    // ---- App 雙向溝通 ----
+    // App 在 WebView 注入 window.flutterObject；一般瀏覽器沒有，改用模擬資料
+    const bridge = window.flutterObject;
+    const inApp = !!bridge;
+
+    const MOCK = {
+      userinfo: { username: 'Wesley', realName: '金大森（模擬）', citizen: true, verifyLevel: '3' },
+      location: { latitude: 25.0375, longitude: 121.5637, accuracy: 10 },
+    };
+
+    // 送出 { name, data } 並等待同名回覆；用完移除 listener，避免重複觸發
+    function callApp(name, data = null, timeoutMs = 10000) {
+      if (!inApp) return Promise.resolve(MOCK[name] ?? null);
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          bridge.removeEventListener('message', onReply);
+          reject(new Error(`${name} 逾時，App 沒有回應`));
+        }, timeoutMs);
+        function onReply(event) {
+          let msg;
+          try { msg = JSON.parse(event.data); } catch { return; }
+          if (msg.name !== name) return;
+          clearTimeout(timer);
+          bridge.removeEventListener('message', onReply);
+          resolve(msg.data);
+        }
+        bridge.addEventListener('message', onReply);
+        bridge.postMessage(JSON.stringify({ name, data }));
+      });
+    }
+
+    // notify 成功時 App 不會回覆，所以只送出不等待
+    function sendToApp(name, data) {
+      if (!inApp) return false;
+      bridge.postMessage(JSON.stringify({ name, data }));
+      return true;
+    }
+
+    // ---- 畫面 ----
+    const $ = (id) => document.getElementById(id);
+    const show = (id, value) => {
+      $(id).textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    };
+
+    const env = $('env');
+    env.textContent = inApp ? '在城市通 App 內執行' : '一般瀏覽器：使用模擬資料';
+    if (!inApp) env.classList.add('mock');
+
+    let realName = '';
+
+    $('btn-api').addEventListener('click', async () => {
+      show('out-api', '呼叫中…');
+      try {
+        const q = realName ? `?name=${encodeURIComponent(realName)}` : '';
+        const res = await fetch(`/api/hello${q}`);
+        show('out-api', await res.json());
+      } catch (e) {
+        show('out-api', `錯誤：${e.message}`);
+      }
+    });
+
+    $('btn-user').addEventListener('click', async () => {
+      show('out-user', '等待 App 回覆…');
+      try {
+        const u = await callApp('userinfo');
+        realName = u?.realName || '';
+        show('out-user', {
+          realName: u?.realName,
+          username: u?.username,
+          citizen: u?.citizen,
+          verifyLevel: u?.verifyLevel,
+        });
+      } catch (e) {
+        show('out-user', `錯誤：${e.message}`);
+      }
+    });
+
+    $('btn-loc').addEventListener('click', async () => {
+      show('out-loc', '等待 App 回覆…');
+      try {
+        // 第一次會跳權限對話框，給使用者足夠時間按允許
+        const p = await callApp('location', null, 30000);
+        if (!p || Array.isArray(p)) {
+          show('out-loc', '沒有取得定位，請確認 App 的定位權限');
+          return;
+        }
+        show('out-loc', { latitude: p.latitude, longitude: p.longitude, accuracy: p.accuracy });
+      } catch (e) {
+        show('out-loc', `錯誤：${e.message}`);
+      }
+    });
+
+    $('btn-notify').addEventListener('click', () => {
+      const sent = sendToApp('notify', {
+        title: '城市通 Hello World',
+        content: `這是來自 Cloudflare 微服務的通知（${new Date().toLocaleTimeString('zh-TW')}）`,
+      });
+      show('out-notify', sent ? '已送出，請查看手機通知列' : '一般瀏覽器無法發送手機通知');
+    });
+  </script>
+</body>
+</html>

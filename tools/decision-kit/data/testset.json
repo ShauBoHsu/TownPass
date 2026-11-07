@@ -1,0 +1,139 @@
+[
+  {
+    "text": "隔壁鐵皮屋燒起來了快來",
+    "label": "emergency"
+  },
+  {
+    "text": "我爸突然胸口痛喘不過氣",
+    "label": "emergency"
+  },
+  {
+    "text": "騎車的阿伯被撞飛躺在路中間",
+    "label": "emergency"
+  },
+  {
+    "text": "巷口那盞燈晚上都不亮",
+    "label": "streetlight"
+  },
+  {
+    "text": "我們社區外面晚上黑漆漆的好可怕",
+    "label": "streetlight"
+  },
+  {
+    "text": "電線桿上的燈一直忽明忽暗",
+    "label": "streetlight"
+  },
+  {
+    "text": "機車騎過去差點摔倒因為地上有個洞",
+    "label": "road"
+  },
+  {
+    "text": "騎樓前面的磚頭翹起來了",
+    "label": "road"
+  },
+  {
+    "text": "下雨後馬路陷下去一塊",
+    "label": "road"
+  },
+  {
+    "text": "樓上每天晚上跳來跳去吵到睡不著",
+    "label": "noise"
+  },
+  {
+    "text": "對面餐廳的抽風機嗡嗡嗡響一整晚",
+    "label": "noise"
+  },
+  {
+    "text": "早上六點就在敲敲打打",
+    "label": "noise"
+  },
+  {
+    "text": "回收場旁邊堆得像小山一樣",
+    "label": "garbage"
+  },
+  {
+    "text": "公園角落一直有怪味還有蒼蠅",
+    "label": "garbage"
+  },
+  {
+    "text": "有人把舊沙發丟在路邊好幾天了",
+    "label": "garbage"
+  },
+  {
+    "text": "每天都有一台白色休旅車停在巷口轉角",
+    "label": "illegalParking"
+  },
+  {
+    "text": "我車子被別人的車堵住開不出去",
+    "label": "illegalParking"
+  },
+  {
+    "text": "無障礙車位被一般車佔走了",
+    "label": "illegalParking"
+  },
+  {
+    "text": "這個月帳單怎麼那麼貴我要查用水量",
+    "label": "water"
+  },
+  {
+    "text": "打開水龍頭都沒有水",
+    "label": "water"
+  },
+  {
+    "text": "家門口地上一直冒水出來",
+    "label": "water"
+  },
+  {
+    "text": "上次借的小說可以再延長嗎",
+    "label": "library"
+  },
+  {
+    "text": "想找哈利波特第三集",
+    "label": "library"
+  },
+  {
+    "text": "週末想帶小孩去看繪本",
+    "label": "library"
+  },
+  {
+    "text": "我想約下週二的皮膚科",
+    "label": "medical"
+  },
+  {
+    "text": "小孩發燒想找小兒科",
+    "label": "medical"
+  },
+  {
+    "text": "老人家要打流感那一針",
+    "label": "medical"
+  },
+  {
+    "text": "等一下要去信義區不知道車要放哪",
+    "label": "parking"
+  },
+  {
+    "text": "百貨公司附近還有沒有位子可以停",
+    "label": "parking"
+  },
+  {
+    "text": "上次停在路邊的錢還沒付",
+    "label": "parking"
+  },
+  {
+    "text": "看到一隻小貓被丟在紙箱裡",
+    "label": "animal"
+  },
+  {
+    "text": "大樓頂樓有隻鴿子翅膀受傷飛不起來",
+    "label": "animal"
+  },
+  {
+    "text": "鄰居的狗被關在陽台曬太陽一整天",
+    "label": "animal"
+  },
+  {
+    "text": "很多人在騎樓抽菸，煙味很濃很臭",
+    "label": "smoking",
+    "note": "使用者回報的誤判（原判為緊急）"
+  }
+]

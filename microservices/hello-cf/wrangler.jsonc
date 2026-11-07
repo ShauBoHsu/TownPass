@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "townpass-hello",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-06",
+  "compatibility_flags": ["nodejs_compat"],
+  // public/ 是微服務網頁；/api/* 與 /hf/*（模型代理）先交給 Worker（Hono）處理，其餘直接回傳靜態檔
+  "assets": {
+    "directory": "./public/",
+    "run_worker_first": ["/api/*", "/hf/*"]
+  },
+  "observability": { "enabled": true }
+}

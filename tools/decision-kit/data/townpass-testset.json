@@ -1,0 +1,94 @@
+[
+  { "text": "有問題想直接打電話問承辦人", "label": "dedicatedLine" },
+  { "text": "幫我撥市府的服務專線", "label": "dedicatedLine" },
+
+  { "text": "我要申請低收入戶證明", "label": "districtOffice" },
+  { "text": "上禮拜送的申請不知道辦好了沒", "label": "districtOffice" },
+
+  { "text": "家門口的水溝一直很臭想反應", "label": "reportIssue" },
+  { "text": "我對市府的某個政策很不滿", "label": "reportIssue" },
+
+  { "text": "去戶政事務所要等很久嗎", "label": "reservation" },
+  { "text": "我拿的號碼還要等幾個人", "label": "reservation" },
+
+  { "text": "市府現在有在讓市民表決什麼嗎", "label": "iVoting" },
+  { "text": "我想對新公園的設計方案表態", "label": "iVoting" },
+
+  { "text": "台北市今年有多少新生兒", "label": "dashboard" },
+  { "text": "想看捷運每天的運量圖表", "label": "dashboard" },
+
+  { "text": "市府有在收集民眾的回饋表單嗎", "label": "survey" },
+  { "text": "我願意花五分鐘回答市政的題目", "label": "survey" },
+
+  { "text": "我的機車停在樓下不見了", "label": "police" },
+  { "text": "有人假冒銀行要我匯錢", "label": "police" },
+
+  { "text": "我們社區的里長是誰", "label": "neighborhood" },
+  { "text": "里民大會什麼時候開", "label": "neighborhood" },
+
+  { "text": "地下道積水好深車子都過不去", "label": "disasterReport" },
+  { "text": "地震後牆壁裂了一大條", "label": "disasterReport" },
+
+  { "text": "老人家要打今年那一劑", "label": "vaccineAppointment" },
+  { "text": "小孩要打的預防針可以線上約嗎", "label": "vaccineAppointment" },
+
+  { "text": "我想看仁愛院區的皮膚科", "label": "medicalAppointment" },
+  { "text": "明天的看診我不能去了", "label": "medicalAppointment" },
+
+  { "text": "開車的時候想聽在地的節目", "label": "cityRadio" },
+  { "text": "有沒有可以邊工作邊聽的台北頻道", "label": "cityRadio" },
+
+  { "text": "下雨天想帶兩歲的女兒去室內放電", "label": "familyCenter" },
+  { "text": "有沒有給幼兒的免費遊戲空間", "label": "familyCenter" },
+
+  { "text": "想去空氣好一點的地方走走", "label": "greenMap" },
+  { "text": "台北哪裡有大片草皮可以野餐", "label": "greenMap" },
+
+  { "text": "我家柯基可以帶去哪裡跑", "label": "petFriendlyMap" },
+  { "text": "有沒有歡迎貓狗的咖啡廳", "label": "petFriendlyMap" },
+
+  { "text": "這兩個月家裡用了幾度水", "label": "waterMeter" },
+  { "text": "自來水帳單要在哪裡付", "label": "waterMeter", "alsoOk": ["bill"] },
+
+  { "text": "颱風過後高麗菜變多貴", "label": "essentialGoods" },
+  { "text": "想知道今天市場的豬肉行情", "label": "essentialGoods" },
+
+  { "text": "上次借的小說可以再延長嗎", "label": "library" },
+  { "text": "想找村上春樹的新書", "label": "library" },
+
+  { "text": "小孩要換尿布附近有地方嗎", "label": "locationSearch" },
+  { "text": "急著上廁所最近的在哪", "label": "locationSearch" },
+
+  { "text": "想帶小孩去看無尾熊", "label": "zoo" },
+  { "text": "木柵那邊的園區週一有開嗎", "label": "zoo" },
+
+  { "text": "牌照稅的單子要在哪裡繳", "label": "bill" },
+  { "text": "上次路邊停車的錢還沒付", "label": "bill" },
+
+  { "text": "城市通有送什麼好康嗎", "label": "perk" },
+  { "text": "我之前領的折價券放在哪", "label": "perk" },
+
+  { "text": "市政府有傳東西給我嗎", "label": "message" },
+  { "text": "剛剛跳出來的通知在哪裡看", "label": "message" },
+
+  { "text": "有新的補助消息時提醒我", "label": "subscription" },
+  { "text": "不想再收到那些活動推播", "label": "subscription" },
+
+  { "text": "這個週末有沒有親子市集", "label": "activityList" },
+  { "text": "跨年晚會的資訊", "label": "activityList" },
+
+  { "text": "門口貼了一張方形的碼要怎麼讀", "label": "qrCodeScan" },
+  { "text": "開相機讀取那個黑白方塊", "label": "qrCodeScan" },
+
+  { "text": "這期統一發票我有沒有中", "label": "invoiceReceipt" },
+  { "text": "繳完費的證明單據要去哪找", "label": "invoiceReceipt" },
+
+  { "text": "我搬家了要改地址", "label": "settings" },
+  { "text": "畫面想改成英文版", "label": "settings" },
+
+  { "text": "城市通打開就當掉", "label": "feedback" },
+  { "text": "按鈕按了都沒反應想跟你們說", "label": "feedback" },
+
+  { "text": "我想知道我的資料被哪些單位看過", "label": "portfolioAuth" },
+  { "text": "不想讓某個服務再讀我的個資", "label": "portfolioAuth" }
+]

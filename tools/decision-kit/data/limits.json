@@ -1,0 +1,53 @@
+{
+  "robustness": [
+    { "kind": "注音文", "text": "路燈壞ㄌ", "label": "streetlight" },
+    { "kind": "注音文", "text": "水費要怎麼繳ㄚ", "label": "water" },
+    { "kind": "錯字", "text": "路登不亮", "label": "streetlight" },
+    { "kind": "錯字", "text": "我要掛好", "label": "medical" },
+    { "kind": "中英夾雜", "text": "我家門口的 light 壞掉了", "label": "streetlight" },
+    { "kind": "中英夾雜", "text": "想 book 一下明天的門診", "label": "medical" },
+    { "kind": "簡體字", "text": "路灯坏了", "label": "streetlight" },
+    { "kind": "簡體字", "text": "我要缴水费", "label": "water" },
+    { "kind": "台語漢字", "text": "厝邊歸暝攏咧吵", "label": "noise" },
+    { "kind": "台語漢字", "text": "巷仔口暗摸摸", "label": "streetlight" },
+    { "kind": "極短", "text": "燈", "label": "streetlight" },
+    { "kind": "極短", "text": "水", "label": "water" },
+    { "kind": "極短", "text": "吵", "label": "noise" },
+    { "kind": "長篇敘述", "text": "我住在大安區已經十幾年了，最近這幾個禮拜每天晚上回家的時候都發現巷子口那邊很暗，好像是燈壞掉了，我女兒晚上補習回來都很害怕，可不可以請你們派人來看一下", "label": "streetlight" },
+    { "kind": "長篇敘述", "text": "我們這棟大樓住了很多老人家，樓下那間餐廳每天把廚餘和紙箱堆在門口，晚上還有老鼠跑來跑去，跟店家講過很多次都沒有改善，真的很困擾", "label": "garbage" },
+    { "kind": "否定句", "text": "路燈沒有壞，是垃圾一直沒人收", "label": "garbage" },
+    { "kind": "否定句", "text": "不是要掛號，我是要借書", "label": "library" },
+    { "kind": "一句多件事", "text": "路燈壞了而且旁邊一堆垃圾", "label": "streetlight", "alsoOk": ["garbage"] },
+    { "kind": "一句多件事", "text": "有車停在紅線上，還一直按喇叭很吵", "label": "illegalParking", "alsoOk": ["noise"] },
+    { "kind": "情緒口語", "text": "靠北喔又停水", "label": "water" },
+    { "kind": "情緒口語", "text": "吵死了啦樓上", "label": "noise" },
+    { "kind": "問句", "text": "請問違規停車要打給誰", "label": "illegalParking" },
+    { "kind": "問句", "text": "請問圖書館週一有開嗎", "label": "library" }
+  ],
+  "outOfScope": [
+    "今天天氣真好",
+    "推薦一家好吃的牛肉麵",
+    "幫我訂一張去高雄的高鐵票",
+    "我想聽周杰倫的歌",
+    "明天幾點會天亮",
+    "我的手機螢幕裂了",
+    "股票明天會漲嗎",
+    "幫我寫一首詩",
+    "我好無聊",
+    "我想學游泳"
+  ],
+  "distractors": [
+    { "id": "household", "name": "戶政", "examples": ["我要辦身分證", "換戶口名簿", "遷戶口要帶什麼", "辦理出生登記"] },
+    { "id": "tax", "name": "稅務", "examples": ["我要繳房屋稅", "牌照稅怎麼繳", "地價稅單不見了", "查詢欠稅"] },
+    { "id": "bus", "name": "公車", "examples": ["公車什麼時候來", "這班公車有到台北車站嗎", "公車路線查詢", "等公車等好久"] },
+    { "id": "youbike", "name": "YouBike", "examples": ["附近哪裡可以借YouBike", "YouBike站沒車了", "還車的位置滿了", "YouBike怎麼租"] },
+    { "id": "socialHousing", "name": "社會住宅", "examples": ["我想申請社會住宅", "社宅租金多少", "租屋補助怎麼申請", "社宅抽籤結果"] },
+    { "id": "childcare", "name": "托育", "examples": ["想找公共托嬰中心", "育兒津貼怎麼申請", "幼兒園報名", "托育補助"] },
+    { "id": "longTermCare", "name": "長照", "examples": ["家裡長輩需要長照", "申請居家照顧服務", "長照喘息服務", "老人送餐服務"] },
+    { "id": "employment", "name": "就業", "examples": ["我想找工作", "職業訓練課程", "失業給付怎麼申請", "就業服務站在哪"] },
+    { "id": "disaster", "name": "防災避難", "examples": ["附近的避難所在哪", "颱風天要去哪裡避難", "地震時要怎麼辦", "防空疏散地點"] },
+    { "id": "sports", "name": "運動中心", "examples": ["運動中心游泳池開放時間", "想租羽球場", "健身房月費多少", "運動中心課程報名"] },
+    { "id": "events", "name": "市政活動", "examples": ["這週末有什麼活動", "跨年晚會在哪裡", "市集活動資訊", "親子活動推薦"] },
+    { "id": "mrt", "name": "捷運", "examples": ["捷運末班車幾點", "捷運怎麼轉乘", "悠遊卡掉在捷運上", "捷運站電梯故障"] }
+  ]
+}
