@@ -200,10 +200,10 @@
           <a class="btn secondary" href="#demo">看 Demo 流程</a>
         </div>
         <div class="facts" aria-label="服務重點數字">
-          <div class="fact"><strong>4</strong><span>項臺北市補助，規則逐條對照官方來源</span></div>
+          <div class="fact"><strong>6</strong><span>項臺北市補助，規則逐條對照官方來源</span></div>
           <div class="fact"><strong>3</strong><span>種代理對象：長者、兒童、身心障礙</span></div>
           <div class="fact"><strong>0</strong><span>筆個資上傳，比對都在手機上完成</span></div>
-          <div class="fact"><strong>24</strong><span>個區公所、戶政事務所窗口資料（data.taipei）</span></div>
+          <div class="fact"><strong>27</strong><span>個區公所、戶政事務所、輔具中心窗口</span></div>
         </div>
       </header>
 
@@ -286,7 +286,7 @@
           <p class="where">點任一補助・路徑 <code>#/b/補助代碼</code></p>
           <ul>
             <li><b>條件逐條</b>標示 ✓ ✕ ?，還不知道的條件直接在旁邊回答。</li>
-            <li><b>去哪裡申請</b>：依對象的戶籍行政區帶出最近的區公所或戶政事務所，可以直接「撥電話」「開地圖」（呼叫城市通原生功能）。</li>
+            <li><b>去哪裡申請</b>：依對象的戶籍行政區帶出負責的區公所、戶政事務所或輔具中心；牙醫診所這類沒有固定窗口的，直接在地圖搜尋附近地點，可以直接「撥電話」「開地圖」（呼叫城市通原生功能）。</li>
             <li><b>要帶的文件</b>可以打勾；代辦時另外列出「你（代理人）另外要帶」的委任書、印章等。生育補助會標明申請人是寶寶的媽媽、爸爸可以拿委託書代辦。</li>
             <li>每項補助附<b>官方來源與查證日期</b>，查不到的地方寫在「尚未確認」，不假裝知道。</li>
           </ul>
@@ -333,7 +333,7 @@
       <!-- 補助 -->
       <section class="block" id="benefits" aria-labelledby="h-benefits">
         <p class="kicker">目前收錄</p>
-        <h2 id="h-benefits">四項臺北市補助（隊內投票選出）</h2>
+        <h2 id="h-benefits">六項臺北市補助（隊內投票選出）</h2>
         <p class="lead">規則在 2026-11-07 逐條對照臺北市法規與社會局、戶政事務所官方頁面。新增補助只要加一筆 JSON 規則，不必改程式。</p>
         <div class="table-wrap">
           <table>
@@ -362,6 +362,18 @@
                 <td>列冊低收入戶，或全家每人每月收入 20,744 元以下且財產在上限內</td>
                 <td>依類別，例如第 0 類每人每月 20,744 元</td>
                 <td>列冊者直接判斷；其他人自評收入與財產</td>
+              </tr>
+              <tr>
+                <td><b>中低收入老人裝置假牙補助</b><span class="muted">社會局・聯合醫院或牙醫診所</span></td>
+                <td>55 歲以上的低收入戶、中低收入戶，或 65 歲以上有領中低收入老人生活津貼、身障生活補助費</td>
+                <td>活動假牙最高 2 萬～5.5 萬元、固定假牙每顆最高 5,000～7,500 元；診所直接請款，不用先付錢</td>
+                <td>年齡＋列冊身分直接判斷；要本人到診所檢查，畫面改成「陪同家人」</td>
+              </tr>
+              <tr>
+                <td><b>身心障礙者輔具費用補助</b><span class="muted">社會局・輔具中心</span></td>
+                <td>持身障證明、有需要的輔具，而且<b>還沒買</b>（一定要先核准才能買）</td>
+                <td>依項目上限：低收入戶全額、中低收入戶 75%、一般戶 50%</td>
+                <td>問「需不需要」和「買了沒」；先買就不補助，App 會提早警告</td>
               </tr>
             </tbody>
           </table>
@@ -416,7 +428,7 @@
             <h3>品質與可維護</h3>
             <ul>
               <li>規則是資料不是程式：條件、文件、窗口、來源網址、查證日期、尚未確認事項都寫在 JSON。</li>
-              <li><b>16 個自動測試</b>（Node.js test runner）：驗證引擎邏輯、每個條件都有對應問題或來自實名資料、三位示範人物的判斷結果。</li>
+              <li><b>19 個自動測試</b>（Node.js test runner）：驗證引擎邏輯、每個條件都有對應問題或來自實名資料、三位示範人物的判斷結果。</li>
               <li>不在城市通裡開啟時，自動改用測試帳號，瀏覽器也能完整試用。</li>
               <li>開機診斷：載入失敗或逾時會顯示原因與重新載入按鈕，不會只剩白畫面。</li>
             </ul>
@@ -510,9 +522,9 @@
           <li class="step">
             <div class="head"><h3>媽媽：沒有手機的獨居長輩</h3><span class="time">1:20–2:30</span><span class="persona">長者</span></div>
             <div class="body">
-              <div class="do"><b>操作</b><ol><li>分頁「家人與代理」→ 指出媽媽是「臨櫃（文山區公所）」授權、四個權限。</li><li>按「查看媽媽的補助」→ 敬老愛心卡 ✓ 可能符合。</li><li>點進敬老愛心卡：條件全部 ✓、最近的文山區公所、撥電話與開地圖、要帶的文件、「你（代理人）另外要帶」。</li><li>按「產生辦事小卡」。</li></ol></div>
-              <div class="say"><b>台詞</b><p>「媽媽 78 歲、獨居、沒有智慧型手機。她只要到區公所臨櫃授權一次，之後我就能幫她查、幫她辦。系統不會問 78 歲的媽媽有沒有生小孩。到了櫃台，我把這張小卡拿給承辦人員，要帶的東西一次帶齊，不用跑第二趟。」</p></div>
-              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/family">家人與代理</button><button type="button" class="btn small secondary" data-go="#/b/senior-card" data-as="mom">敬老愛心卡</button><button type="button" class="btn small secondary" data-go="#/card/senior-card" data-as="mom">辦事小卡</button></p></div>
+              <div class="do"><b>操作</b><ol><li>分頁「家人與代理」→ 指出媽媽是「臨櫃（文山區公所）」授權、四個權限。</li><li>按「查看媽媽的補助」→ 敬老愛心卡、<b>假牙補助</b> ✓ 可能符合。</li><li>點進敬老愛心卡：條件全部 ✓、最近的文山區公所、撥電話與開地圖、要帶的文件、「你（代理人）另外要帶」。</li><li>按「產生辦事小卡」。</li><li>回清單點「中低收入老人裝置假牙補助」：指出「這項要媽媽本人去辦」、不用先付錢、在地圖找牙醫診所。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「媽媽 78 歲、獨居、沒有智慧型手機。她只要到區公所臨櫃授權一次，之後我就能幫她查、幫她辦。系統不會問 78 歲的媽媽有沒有生小孩。到了櫃台，我把這張小卡拿給承辦人員，要帶的東西一次帶齊，不用跑第二趟。開場說的假牙補助，媽媽也符合：App 主動告訴我們，而且不用先付錢，我只要陪她去診所。」</p></div>
+              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/family">家人與代理</button><button type="button" class="btn small secondary" data-go="#/b/senior-card" data-as="mom">敬老愛心卡</button><button type="button" class="btn small secondary" data-go="#/card/senior-card" data-as="mom">辦事小卡</button><button type="button" class="btn small secondary" data-go="#/b/denture" data-as="mom">假牙補助</button></p></div>
             </div>
           </li>
 
@@ -528,9 +540,9 @@
           <li class="step">
             <div class="head"><h3>弟弟：本人同意，也保有自己的決定</h3><span class="time">3:20–4:20</span><span class="persona">身心障礙</span></div>
             <div class="body">
-              <div class="do"><b>操作</b><ol><li>切到「弟弟」→ 顯示「等待弟弟同意代理」，什麼結果都看不到。</li><li>按「示範：金小華已同意」→ 低收入戶生活扶助 ✓；身心障礙者生活補助只剩一題。</li><li>回答「目前住在家裡」→ 身障生活補助變成 ✓ 可能符合。</li><li>點進去：「產生辦事小卡」是停用的，因為弟弟只開放查詢，沒有開放代為申請。</li><li>回「家人與代理」→ 代理紀錄列出剛剛的同意與代答。</li></ol></div>
-              <div class="say"><b>台詞</b><p>「弟弟是成年人，要他自己在城市通按同意，我才看得到。他已經是列冊低收入戶，所以不用再問收入財產，只差一題就有結果。他只讓我查、不讓我代辦，App 就照他的意思做；我做的每一件事，他都看得到紀錄。」</p></div>
-              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/" data-as="brother">弟弟的補助</button><button type="button" class="btn small secondary" data-go="#/b/disability-allowance" data-as="brother">身障生活補助</button><button type="button" class="btn small secondary" data-go="#/family">代理紀錄</button></p></div>
+              <div class="do"><b>操作</b><ol><li>切到「弟弟」→ 顯示「等待弟弟同意代理」，什麼結果都看不到。</li><li>按「示範：金小華已同意」→ 低收入戶生活扶助 ✓；身心障礙者生活補助只剩一題。</li><li>回答「目前住在家裡」→ 身障生活補助變成 ✓ 可能符合。</li><li>下一題自動變成「有需要的輔具嗎？」→ 回答有需要 → 再問「這項輔具還沒買嗎？」，提示一定要先申請、核准後才能買。</li><li>點進去：「產生辦事小卡」是停用的，因為弟弟只開放查詢，沒有開放代為申請。</li><li>回「家人與代理」→ 代理紀錄列出剛剛的同意與代答。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「弟弟是成年人，要他自己在城市通按同意，我才看得到。他已經是列冊低收入戶，所以不用再問收入財產，只差一題就有結果。他只讓我查、不讓我代辦，App 就照他的意思做；我做的每一件事，他都看得到紀錄。輔具補助很多人拿不到，是因為先買了才來申請；App 在買之前就提醒。」</p></div>
+              <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/" data-as="brother">弟弟的補助</button><button type="button" class="btn small secondary" data-go="#/b/disability-allowance" data-as="brother">身障生活補助</button><button type="button" class="btn small secondary" data-go="#/b/assistive-device" data-as="brother">輔具補助</button><button type="button" class="btn small secondary" data-go="#/family">代理紀錄</button></p></div>
             </div>
           </li>
 
@@ -538,7 +550,7 @@
             <div class="head"><h3>收尾：隱私、資料、可以擴充</h3><span class="time">4:20–5:00</span></div>
             <div class="body">
               <div class="do"><b>操作</b><p>回到補助清單，指出最下面「比對在這支手機上完成，個資不會上傳」，再點一項補助最下面的官方來源。</p></div>
-              <div class="say"><b>台詞</b><p>「所有比對都在手機上做，個資不上傳。四項補助的規則都逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到把『人找補助』變成『補助找人』，再讓家人幫忙把最後一段路走完。」</p></div>
+              <div class="say"><b>台詞</b><p>「所有比對都在手機上做，個資不上傳。六項補助的規則都逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到把『人找補助』變成『補助找人』，再讓家人幫忙把最後一段路走完。」</p></div>
             </div>
           </li>
         </ol>
@@ -548,7 +560,7 @@
           <ol>
             <li>一句話：城市通實名資料主動比對補助，家人經過同意可以代辦。</li>
             <li>打開拿得到 → 補助清單三格摘要（本人）。</li>
-            <li>家人與代理 → 媽媽臨櫃授權 → 敬老愛心卡 → 辦事小卡。</li>
+            <li>家人與代理 → 媽媽臨櫃授權 → 敬老愛心卡、假牙補助 → 辦事小卡。</li>
             <li>通知 → 女兒生育補助 60 天倒數 → 傳到手機通知。</li>
             <li>收尾：個資不上傳、規則對照官方來源。評審有興趣再展示弟弟的同意與權限。</li>
           </ol>

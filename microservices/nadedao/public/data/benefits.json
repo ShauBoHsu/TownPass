@@ -5,7 +5,12 @@
     "agency": "臺北市政府民政局（各區戶政事務所受理）",
     "summary": "寶寶在臺北市辦好出生登記後，可以依胎次領一次性的生育補助。",
     "amount": "第 1 胎 4 萬元、第 2 胎 4.5 萬元、第 3 胎起每胎 5 萬元；死產不分胎次 4 萬元",
-    "relevantWhen": { "key": "age", "op": "<=", "value": 60, "label": "通常適用於有新生兒的家長（60 歲以下），不是法定年齡限制" },
+    "relevantWhen": {
+      "key": "age",
+      "op": "<=",
+      "value": 60,
+      "label": "通常適用於有新生兒的家長（60 歲以下），不是法定年齡限制"
+    },
     "applicantRole": "寶寶的媽媽",
     "applicantNote": "爸爸可以拿委託書代辦",
     "notes": [
@@ -13,14 +18,42 @@
       "要到辦理出生登記或寶寶設籍所在地的戶政事務所申請，可以在辦出生登記時一併申請。"
     ],
     "conditions": [
-      { "key": "citizen", "op": "==", "value": true, "label": "申請時設籍臺北市" },
-      { "key": "hasNewborn", "op": "==", "value": true, "label": "寶寶已在臺北市辦好出生登記，且還在出生次日起 60 日內" },
-      { "key": "residency10m", "op": "==", "value": true, "label": "爸爸或媽媽從寶寶出生（或預產日）前 10 個月起連續設籍北北基，申請時在臺北市" }
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "申請時設籍臺北市"
+      },
+      {
+        "key": "hasNewborn",
+        "op": "==",
+        "value": true,
+        "label": "寶寶已在臺北市辦好出生登記，且還在出生次日起 60 日內"
+      },
+      {
+        "key": "residency10m",
+        "op": "==",
+        "value": true,
+        "label": "爸爸或媽媽從寶寶出生（或預產日）前 10 個月起連續設籍北北基，申請時在臺北市"
+      }
     ],
-    "documents": ["申請書（戶政事務所現場填寫）", "申請人身分證明文件", "申請人金融機構帳戶影本"],
+    "documents": [
+      "申請書（戶政事務所現場填寫）",
+      "申請人身分證明文件",
+      "申請人金融機構帳戶影本"
+    ],
     "proxyAllowed": true,
-    "proxyDocuments": ["代理人身分證明文件", "委託書（可填申請表的委託欄，或另附委託書）"],
-    "applyChannels": [{ "type": "臨櫃", "where": "householdOffice", "label": "辦理出生登記或寶寶設籍地的戶政事務所" }],
+    "proxyDocuments": [
+      "代理人身分證明文件",
+      "委託書（可填申請表的委託欄，或另附委託書）"
+    ],
+    "applyChannels": [
+      {
+        "type": "臨櫃",
+        "where": "householdOffice",
+        "label": "辦理出生登記或寶寶設籍地的戶政事務所"
+      }
+    ],
     "period": "出生次日起 60 日內（有正當理由經戶政事務所核准，可延長到 1 年）",
     "prepay": false,
     "sourceUrls": [
@@ -44,14 +77,37 @@
       "卡片每 6 個月要展期一次，可以在四大超商、捷運站查詢機或區公所辦理。"
     ],
     "conditions": [
-      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市" },
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "設籍並實際居住臺北市"
+      },
       {
         "anyOf": [
-          { "key": "age", "op": ">=", "value": 65, "label": "年滿 65 歲" },
-          { "allOf": [
-            { "key": "nativePeople", "op": "==", "value": true, "label": "原住民身分" },
-            { "key": "age", "op": ">=", "value": 55, "label": "年滿 55 歲" }
-          ], "label": "原住民年滿 55 歲" }
+          {
+            "key": "age",
+            "op": ">=",
+            "value": 65,
+            "label": "年滿 65 歲"
+          },
+          {
+            "allOf": [
+              {
+                "key": "nativePeople",
+                "op": "==",
+                "value": true,
+                "label": "原住民身分"
+              },
+              {
+                "key": "age",
+                "op": ">=",
+                "value": 55,
+                "label": "年滿 55 歲"
+              }
+            ],
+            "label": "原住民年滿 55 歲"
+          }
         ],
         "label": "年滿 65 歲，或原住民年滿 55 歲（年滿當月就能申請）"
       }
@@ -59,11 +115,28 @@
     "documents": [
       "國民身分證正本",
       "2 吋彩色照片 1 張（建議帶 2 張）",
-      { "text": "戶口名簿（原住民身分）", "when": { "key": "nativePeople", "op": "==", "value": true } }
+      {
+        "text": "戶口名簿（原住民身分）",
+        "when": {
+          "key": "nativePeople",
+          "op": "==",
+          "value": true
+        }
+      }
     ],
     "proxyAllowed": true,
-    "proxyDocuments": ["長輩的印章", "委任書", "代理人身分證明文件"],
-    "applyChannels": [{ "type": "臨櫃", "where": "districtOffice", "label": "任一區公所社會課（下面是離長輩最近的）" }],
+    "proxyDocuments": [
+      "長輩的印章",
+      "委任書",
+      "代理人身分證明文件"
+    ],
+    "applyChannels": [
+      {
+        "type": "臨櫃",
+        "where": "districtOffice",
+        "label": "任一區公所社會課（下面是離長輩最近的）"
+      }
+    ],
     "period": "年滿 65 歲（原住民 55 歲）當月任一工作天起",
     "prepay": false,
     "sourceUrls": [
@@ -87,24 +160,73 @@
       "與其他生活津貼只能擇一領取。"
     ],
     "conditions": [
-      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天" },
-      { "key": "disabilityCard", "op": "==", "value": true, "label": "持有臺北市核發或註記的身心障礙證明" },
-      { "key": "notInstitutionalized", "op": "==", "value": true, "label": "沒有住在政府公費安置的夜間或全日住宿型機構" },
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天"
+      },
+      {
+        "key": "disabilityCard",
+        "op": "==",
+        "value": true,
+        "label": "持有臺北市核發或註記的身心障礙證明"
+      },
+      {
+        "key": "notInstitutionalized",
+        "op": "==",
+        "value": true,
+        "label": "沒有住在政府公費安置的夜間或全日住宿型機構"
+      },
       {
         "anyOf": [
-          { "key": "incomeStatus", "op": "in", "value": ["low", "midLow"], "label": "已是列冊低收入戶或中低收入戶" },
-          { "allOf": [
-            { "key": "income39960", "op": "==", "value": true, "label": "全家收入平均每人每月不超過 39,960 元" },
-            { "key": "assetsDisability", "op": "==", "value": true, "label": "全家財產在上限內" }
-          ], "label": "收入與財產都在標準內" }
+          {
+            "key": "incomeStatus",
+            "op": "in",
+            "value": [
+              "low",
+              "midLow"
+            ],
+            "label": "已是列冊低收入戶或中低收入戶"
+          },
+          {
+            "allOf": [
+              {
+                "key": "income39960",
+                "op": "==",
+                "value": true,
+                "label": "全家收入平均每人每月不超過 39,960 元"
+              },
+              {
+                "key": "assetsDisability",
+                "op": "==",
+                "value": true,
+                "label": "全家財產在上限內"
+              }
+            ],
+            "label": "收入與財產都在標準內"
+          }
         ],
         "label": "已列冊低收／中低收入戶，或全家收入、財產都在標準內"
       }
     ],
-    "documents": ["申請表", "申請人國民身分證正本", "台北富邦銀行或郵局存摺封面影本", "租屋者附租賃契約影本"],
+    "documents": [
+      "申請表",
+      "申請人國民身分證正本",
+      "台北富邦銀行或郵局存摺封面影本",
+      "租屋者附租賃契約影本"
+    ],
     "proxyAllowed": true,
-    "proxyDocuments": ["代申請人身分證明文件影本"],
-    "applyChannels": [{ "type": "臨櫃", "where": "districtOffice", "label": "戶籍所在地區公所社會課" }],
+    "proxyDocuments": [
+      "代申請人身分證明文件影本"
+    ],
+    "applyChannels": [
+      {
+        "type": "臨櫃",
+        "where": "districtOffice",
+        "label": "戶籍所在地區公所社會課"
+      }
+    ],
     "period": "隨時可以申請；審核通過後，從文件備齊的當月開始發給",
     "prepay": false,
     "sourceUrls": [
@@ -112,7 +234,10 @@
       "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050189"
     ],
     "verifiedAt": "2026-11-07",
-    "uncertain": ["是否可以線上申請未確認", "收入與財產的計算範圍以區公所審核為準"]
+    "uncertain": [
+      "是否可以線上申請未確認",
+      "收入與財產的計算範圍以區公所審核為準"
+    ]
   },
   {
     "id": "low-income-living",
@@ -125,24 +250,64 @@
       "也可以透過台北服務通線上申請。"
     ],
     "conditions": [
-      { "key": "citizen", "op": "==", "value": true, "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天" },
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "設籍並實際居住臺北市，最近一年住在國內超過 183 天"
+      },
       {
         "anyOf": [
-          { "key": "incomeStatus", "op": "==", "value": "low", "label": "已是列冊低收入戶" },
-          { "allOf": [
-            { "key": "income20744", "op": "==", "value": true, "label": "全家收入平均每人每月不超過 20,744 元" },
-            { "key": "assetsLowIncome", "op": "==", "value": true, "label": "全家財產在上限內" }
-          ], "label": "收入與財產都在標準內" }
+          {
+            "key": "incomeStatus",
+            "op": "==",
+            "value": "low",
+            "label": "已是列冊低收入戶"
+          },
+          {
+            "allOf": [
+              {
+                "key": "income20744",
+                "op": "==",
+                "value": true,
+                "label": "全家收入平均每人每月不超過 20,744 元"
+              },
+              {
+                "key": "assetsLowIncome",
+                "op": "==",
+                "value": true,
+                "label": "全家財產在上限內"
+              }
+            ],
+            "label": "收入與財產都在標準內"
+          }
         ],
         "label": "已列冊低收入戶，或全家收入、財產都在標準內"
       }
     ],
-    "documents": ["申請表", "申請人國民身分證正本", "新式戶口名簿影本（含詳細記事）", "台北富邦銀行或郵局存摺封面影本", "租屋者附租賃契約影本"],
+    "documents": [
+      "申請表",
+      "申請人國民身分證正本",
+      "新式戶口名簿影本（含詳細記事）",
+      "台北富邦銀行或郵局存摺封面影本",
+      "租屋者附租賃契約影本"
+    ],
     "proxyAllowed": true,
-    "proxyDocuments": ["代申請人身分證明文件影本"],
+    "proxyDocuments": [
+      "代申請人身分證明文件影本"
+    ],
     "applyChannels": [
-      { "type": "臨櫃", "where": "districtOffice", "label": "戶籍所在地區公所社會課" },
-      { "type": "線上", "where": "url", "label": "台北服務通", "url": "https://service.taipei" }
+      {
+        "type": "臨櫃",
+        "where": "districtOffice",
+        "label": "戶籍所在地區公所社會課"
+      },
+      {
+        "type": "線上",
+        "where": "url",
+        "label": "台北服務通",
+        "url": "https://service.taipei"
+      }
     ],
     "period": "隨時可以申請；每年辦理總清查",
     "prepay": false,
@@ -151,6 +316,197 @@
       "https://www.gov.taipei/News_Content.aspx?n=EEC70A4186D4C828&sms=87415A8B9CE81B16&s=8336A7914A3243BF"
     ],
     "verifiedAt": "2026-11-07",
-    "uncertain": ["全家人口的計算範圍依社會救助法，App 無法計算，只能自評", "線上申請流程未實際走過"]
+    "uncertain": [
+      "全家人口的計算範圍依社會救助法，App 無法計算，只能自評",
+      "線上申請流程未實際走過"
+    ]
+  },
+  {
+    "id": "denture",
+    "name": "中低收入老人裝置假牙補助",
+    "agency": "臺北市政府社會局（臺北市立聯合醫院、臺北市牙醫師公會所屬牙醫診所受理）",
+    "summary": "經濟弱勢的長輩經牙醫評估需要假牙，由市府補助做活動或固定假牙，診所直接向社會局請款。",
+    "amount": "活動假牙最高 2 萬～5.5 萬元、固定假牙每顆最高 5,000～7,500 元（依身分與假牙種類），每人每年最高 10 萬元",
+    "notes": [
+      "要長輩本人到聯合醫院或牙醫診所檢查，由診所幫忙送件。家人可以陪同、幫忙預約與準備文件。",
+      "一定要等社會局核准後才開始做假牙。沒先申請就自己做好的，只能在做好後 180 天內申請，而且最多補助上限的 8 成。",
+      "一般情況不用先付錢：診所直接向社會局請款；超過補助上限的部分要自己付。",
+      "活動假牙：低收入戶最高 2.5 萬～5.5 萬元，中低收入戶等身分最高 2 萬～4.5 萬元（上下顎全口最高）。固定假牙最多補助 6 顆。",
+      "同一顆牙 5 年內不能重複申請；活動假牙裝好滿 1 年後，壞了可以申請維修補助（每年最多 6,600 元，要先付錢再請款）。",
+      "65 歲以上公費收容安置或領住宿式、日間照顧補助 5 成以上的長輩也可以申請；原住民另有原民會的假牙補助。",
+      "洽詢：1999（外縣市 02-2720-8889）轉 6966～6968 社會局老人福利科。"
+    ],
+    "conditions": [
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "設籍臺北市"
+      },
+      {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "key": "age",
+                "op": ">=",
+                "value": 55,
+                "label": "年滿 55 歲"
+              },
+              {
+                "key": "incomeStatus",
+                "op": "in",
+                "value": [
+                  "low",
+                  "midLow"
+                ],
+                "label": "列冊臺北市低收入戶或中低收入戶"
+              }
+            ],
+            "label": "55 歲以上的低收入戶或中低收入戶"
+          },
+          {
+            "allOf": [
+              {
+                "key": "age",
+                "op": ">=",
+                "value": 65,
+                "label": "年滿 65 歲"
+              },
+              {
+                "anyOf": [
+                  {
+                    "key": "midLowSeniorAllowance",
+                    "op": "==",
+                    "value": true,
+                    "label": "有領中低收入老人生活津貼"
+                  },
+                  {
+                    "key": "disabilityLivingAllowance",
+                    "op": "==",
+                    "value": true,
+                    "label": "有領身心障礙者生活補助費"
+                  }
+                ],
+                "label": "有領中低收入老人生活津貼或身障生活補助費"
+              }
+            ],
+            "label": "65 歲以上，有領中低收入老人生活津貼或身障生活補助費"
+          }
+        ],
+        "label": "55 歲以上的低收入戶或中低收入戶，或 65 歲以上有領中低收入老人生活津貼、身障生活補助費"
+      }
+    ],
+    "documents": [
+      "國民身分證",
+      "低收入戶或中低收入戶證明（沒有的話，診所可以請社會局查詢）",
+      "牙醫開的診治計畫書（在診所開立）",
+      "同意補助款撥付診所切結書、個資同意書（在診所簽名）"
+    ],
+    "proxyAllowed": false,
+    "proxyDocuments": [],
+    "applyChannels": [
+      {
+        "type": "臨櫃",
+        "where": "place",
+        "label": "臺北市立聯合醫院各院區牙科或社工課（中興、仁愛、忠孝、陽明、和平婦幼）",
+        "mapQuery": "臺北市立聯合醫院"
+      },
+      {
+        "type": "臨櫃",
+        "where": "place",
+        "label": "臺北市牙醫師公會所屬的牙醫診所（由診所幫忙送件）",
+        "mapQuery": "牙醫診所"
+      }
+    ],
+    "period": "全年都可以申請；要先核准再做假牙",
+    "prepay": false,
+    "sourceUrls": [
+      "https://laws.gov.taipei/law/LawSearch/LawPrint/FL079304?type=0",
+      "https://dosw.gov.taipei/cp.aspx?n=504CCD746B074DAE",
+      "https://tpech.gov.taipei/News_Content.aspx?n=3DCB8354266784CC&s=317536C21175CAFB",
+      "https://laws.gov.taipei/Law/SOPSearch/DownloadFile?sop_no=P08000102.pdf"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": [
+      "115 年版「應備文件一覽表」沒有找到，文件清單是從申請流程與表單整理的",
+      "官方沒有寫可否由家人代辦；長輩要本人到診所檢查",
+      "超過補助上限的差額怎麼收，計畫與流程圖寫法不一致",
+      "65 歲以上公費收容安置等少數身分沒有放進自動判斷"
+    ]
+  },
+  {
+    "id": "assistive-device",
+    "name": "身心障礙者輔具費用補助",
+    "agency": "臺北市政府社會局（臺北市輔具中心受理）",
+    "summary": "需要輪椅、助聽器等輔具的身障者，先申請核准再購買，依家庭經濟狀況補助全額、75% 或 50%。",
+    "amount": "每項輔具有補助上限：低收入戶全額、中低收入戶 75%、一般戶 50%（例如輕量化輪椅上限 4,000 元、中階助聽器上限 1 萬元）",
+    "notes": [
+      "⚠️ 一定要先申請、拿到社會局核准公文後才能買。先買才申請，或先買才去做評估，都不補助。",
+      "核准後要在 6 個月內買好並請款。自己請款要先付全額，請款後約 1 個月撥款；向社會局特約廠商購買，可以由廠商代墊，只付自己負擔的部分。",
+      "需要評估的項目，要先由醫師開診斷證明、輔具中心評估；診斷證明與評估報告 3 個月內有效。",
+      "同一項輔具在最低使用年限內不能再補助（例如輪椅 3 年、助聽器 4 年）；每人每 2 年最多 4 項。",
+      "核准後請款要帶：核銷請款書、核准公文影本、發票或收據正本、存摺封面影本、領據與印章、保固書影本。",
+      "各區社會福利服務中心也可以協助收件。被駁回可以在 15 天內申請複查。"
+    ],
+    "conditions": [
+      {
+        "key": "citizen",
+        "op": "==",
+        "value": true,
+        "label": "設籍臺北市，最近一年住在國內超過 183 天"
+      },
+      {
+        "key": "disabilityCard",
+        "op": "==",
+        "value": true,
+        "label": "持有臺北市核發或註記的身心障礙證明"
+      },
+      {
+        "key": "needsDevice",
+        "op": "==",
+        "value": true,
+        "label": "有需要的輔具（例如輪椅、助聽器），而且符合障礙類別的規定"
+      },
+      {
+        "key": "notPurchasedYet",
+        "op": "==",
+        "value": true,
+        "label": "還沒買這項輔具（必須先申請、核准後才能買）"
+      }
+    ],
+    "documents": [
+      "臺北市身心障礙者輔助器具費用補助申請書",
+      "國民身分證正本",
+      "身心障礙證明",
+      "3 個月內的醫師診斷證明書正本（依輔具項目）",
+      "3 個月內的輔具評估報告書正本（依輔具項目，自己留一份影本）"
+    ],
+    "proxyAllowed": true,
+    "proxyDocuments": [
+      "代理申請委託書（在申請書下方，雙方簽名或蓋章並寫明關係）",
+      "代理人身分證"
+    ],
+    "applyChannels": [
+      {
+        "type": "臨櫃",
+        "where": "assistiveCenter",
+        "label": "依戶籍行政區到臺北市輔具中心申請"
+      }
+    ],
+    "period": "全年都可以申請，但一定要在購買前申請；核准後 6 個月內購買並請款",
+    "prepay": true,
+    "sourceUrls": [
+      "https://dosw.gov.taipei/cp.aspx?n=49304F9B0793FFEF",
+      "https://dosw.gov.taipei/News_Content.aspx?n=91F35523B74F69AC&sms=87415A8B9CE81B16&s=DA8424B9D6291D2C",
+      "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050060"
+    ],
+    "verifiedAt": "2026-11-07",
+    "uncertain": [
+      "特約廠商代墊的流程與廠商名單沒有在社會局頁面找到",
+      "是否可以在台北服務通線上申請未確認",
+      "代理人是否要帶自己的身分證，官方沒有明文規定（建議帶）",
+      "各項輔具的補助上限要查衛福部補助基準表，這裡只舉輪椅、助聽器為例"
+    ]
   }
 ]

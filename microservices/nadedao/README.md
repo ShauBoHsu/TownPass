@@ -47,6 +47,8 @@ docker build -t nadedao . && docker run -p 8080:8080 nadedao
 | [敬老愛心卡](https://dosw.gov.taipei/cp.aspx?n=4683CD9EE2EB68B1) | 社會局 | — | 敬老卡規則 |
 | [身心障礙者生活補助](https://dosw.gov.taipei/cp.aspx?n=C764A5808F9A3B08)、[身心障礙者生活補助費發給辦法](https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050189) | 社會局、衛福部 | — | 身障生活補助規則（115 年度金額與門檻） |
 | [低收入戶](https://dosw.gov.taipei/cp.aspx?n=E6D700BD37E78592) | 社會局 | — | 低收入戶生活扶助規則（115 年度最低生活費） |
+| [中低收入老人補助裝置假牙實施計畫](https://laws.gov.taipei/law/LawSearch/LawPrint/FL079304?type=0)、[社會局說明](https://dosw.gov.taipei/cp.aspx?n=504CCD746B074DAE) | 社會局 | — | 假牙補助規則 |
+| [身心障礙者輔具費用補助](https://dosw.gov.taipei/cp.aspx?n=49304F9B0793FFEF)、[補助辦法](https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0050060) | 社會局、衛福部 | — | 輔具補助規則、三區輔具中心電話 |
 | 城市通 `userinfo` | 城市通 App | — | 生日、設籍、原住民身分、行政區 |
 
 規則於 2026-11-07 從上列官方頁面查證；各項尚未確認的地方列在 `benefits.json` 的 `uncertain`，畫面上也會顯示。

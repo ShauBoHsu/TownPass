@@ -77,6 +77,41 @@ test('影響項目一樣多時，先問離結論最近的補助（弟弟先問�
   assert.equal(nextQuestion(results, questions).key, 'notInstitutionalized');
 });
 
+test('媽媽（78 歲、中低收入戶）：假牙補助可能符合，但要本人去診所（不能代辦）', () => {
+  const mom = family.find((f) => f.id === 'mom');
+  assert.equal(statusOf(mom)['denture'], 'eligible');
+  assert.equal(benefits.find((b) => b.id === 'denture').proxyAllowed, false);
+  // 一般戶 70 歲：要問有沒有領中低收入老人生活津貼
+  const r = evaluateAll(benefits, factsFrom({ birthday: '1956/01/01', citizen: true, answers: { incomeStatus: 'none' } }, today));
+  const den = r.find((x) => x.benefit.id === 'denture');
+  assert.equal(den.status, 'ask');
+  assert.ok(den.missing.includes('midLowSeniorAllowance'));
+  // 50 歲低收入戶：年齡未滿 55，不符合
+  assert.equal(statusOf({ birthday: '1976/01/01', citizen: true, answers: { incomeStatus: 'low' } })['denture'], 'ineligible');
+});
+
+test('弟弟：輔具補助要問需不需要；已經先買了就不符合（要先申請才能買）', () => {
+  const bro = family.find((f) => f.id === 'brother');
+  const answers = { ...bro.answers, notInstitutionalized: true };
+  const results = evaluateAll(benefits, factsFrom({ ...bro, answers }, today));
+  assert.equal(results.find((r) => r.benefit.id === 'assistive-device').status, 'ask');
+  // 回答住在家裡之後，下一題問輔具，不問新生兒
+  assert.equal(nextQuestion(results, questions).key, 'needsDevice');
+  assert.equal(statusOf({ ...bro, answers: { ...answers, needsDevice: true, notPurchasedYet: true } })['assistive-device'], 'eligible');
+  assert.equal(statusOf({ ...bro, answers: { ...answers, needsDevice: true, notPurchasedYet: false } })['assistive-device'], 'ineligible');
+});
+
+test('每個臨櫃管道都有窗口資料或地圖搜尋字', () => {
+  const offices = read('../public/data/offices.json');
+  const tables = { householdOffice: 'householdOffices', districtOffice: 'districtOffices', assistiveCenter: 'assistiveCenters' };
+  for (const b of benefits) {
+    for (const ch of b.applyChannels.filter((c) => c.type === '臨櫃')) {
+      if (tables[ch.where]) assert.equal(Object.keys(offices[tables[ch.where]]).length, 12, `${b.id} 的窗口沒有涵蓋 12 區`);
+      else assert.ok(ch.mapQuery, `${b.id} 的「${ch.label}」沒有地圖搜尋字`);
+    }
+  }
+});
+
 test('列冊身分可以省略收入與財產題；沒有列冊才問', () => {
   const base = { birthday: '1960/01/01', citizen: true, answers: { disabilityCard: true, notInstitutionalized: true } };
   const r1 = evaluateAll(benefits, factsFrom(base, today));

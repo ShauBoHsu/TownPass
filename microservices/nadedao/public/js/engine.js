@@ -112,18 +112,22 @@ export function evaluateAll(benefits, facts) {
  * 下一個最值得問的問題：
  * 1. 被最多項「要回答」的補助需要的事實優先（回答一題影響最多補助）
  * 2. 一樣多時，優先問「離結論最近」的補助（缺的條件最少），讓使用者最快看到結果
+ * 3. 還是一樣時，優先問「已經符合最多條件」的補助（例如有身障證明的人，先問輔具，不先問新生兒）
  */
 export function nextQuestion(results, questions) {
   const stat = {};
   for (const r of results) {
     if (r.status !== 'ask') continue;
+    const passed = r.checks.filter((c) => c.result === 'pass').length;
     for (const key of r.missing) {
       if (!questions[key]) continue;
-      const s = (stat[key] ??= { affects: 0, closest: Infinity });
+      const s = (stat[key] ??= { affects: 0, closest: Infinity, passed: 0 });
       s.affects += 1;
       s.closest = Math.min(s.closest, r.missing.length);
+      s.passed = Math.max(s.passed, passed);
     }
   }
-  const best = Object.entries(stat).sort((a, b) => b[1].affects - a[1].affects || a[1].closest - b[1].closest)[0];
+  const best = Object.entries(stat).sort((a, b) =>
+    b[1].affects - a[1].affects || a[1].closest - b[1].closest || b[1].passed - a[1].passed)[0];
   return best ? { key: best[0], ...questions[best[0]], affects: best[1].affects } : null;
 }

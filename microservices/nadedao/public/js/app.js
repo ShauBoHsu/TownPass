@@ -60,8 +60,9 @@ function docsFor(items, p) {
     .filter((d) => typeof d === 'string' || !d.when || evaluateCondition(d.when, facts).result === 'pass')
     .map((d) => (typeof d === 'string' ? d : d.text));
 }
+const OFFICE_TABLES = { householdOffice: 'householdOffices', districtOffice: 'districtOffices', assistiveCenter: 'assistiveCenters' };
 function officeFor(where, p) {
-  const table = where === 'householdOffice' ? state.offices.householdOffices : state.offices.districtOffices;
+  const table = state.offices[OFFICE_TABLES[where]];
   return table?.[p.town] ?? null;
 }
 
@@ -194,12 +195,19 @@ function renderDetail(id) {
       return `<div class="card"><h3>線上：${esc(ch.label)}</h3>
         <a class="btn secondary" href="${esc(ch.url)}" target="_blank" rel="noopener">前往${esc(ch.label)}</a></div>`;
     }
+    // 沒有固定窗口（例如牙醫診所）：用手機地圖搜尋附近的地點
+    if (!OFFICE_TABLES[ch.where]) {
+      return `<div class="card">
+        <h3>臨櫃：${esc(ch.label)}</h3>
+        ${ch.mapQuery ? `<div class="row"><button type="button" class="btn secondary" data-map="${esc(ch.mapQuery)}">在地圖找${esc(ch.mapQuery)}</button></div>` : ''}
+      </div>`;
+    }
     const office = officeFor(ch.where, p);
     return `<div class="card">
       <h3>臨櫃：${esc(ch.label)}</h3>
-      ${office ? `<dl class="kv"><dt>地點</dt><dd>${esc(office.name)}</dd><dt>地址</dt><dd>${esc(office.address)}</dd><dt>電話</dt><dd>${esc(office.phone)}</dd></dl>
+      ${office ? `<dl class="kv"><dt>地點</dt><dd>${esc(office.name)}</dd>${office.address ? `<dt>地址</dt><dd>${esc(office.address)}</dd>` : ''}<dt>電話</dt><dd>${esc(office.phone)}</dd></dl>
       <div class="row"><button type="button" class="btn secondary" data-call="${esc(office.phone)}">撥電話</button>
-      <button type="button" class="btn secondary" data-map="${esc(office.address)}">開地圖</button></div>`
+      <button type="button" class="btn secondary" data-map="${esc(office.address || office.name)}">開地圖</button></div>`
         : `<p class="muted">${esc(whoName(p))}的行政區資料不完整，請到「家人與代理」補上行政區。</p>`}
     </div>`;
   }).join('');
@@ -225,6 +233,7 @@ function renderDetail(id) {
     <section class="stack"><h2>去哪裡申請</h2>${channels}<p class="small muted">受理期間：${esc(b.period)}${b.prepay ? '・需要先自行墊付' : ''}</p></section>
 
     <section class="card"><h2>${forOther ? `${esc(b.applicantRole)}要帶的文件` : proxy ? `${esc(p.relation)}的文件` : '要帶的文件'}</h2>${forOther && b.applicantNote ? `<p class="small muted">申請人是${esc(b.applicantRole)}；${esc(b.applicantNote)}。</p>` : ''}${docList(p, b, 'main', docsFor(b.documents, p))}</section>
+    ${proxy && !b.proxyAllowed ? `<div class="banner info"><strong>這項要${esc(p.relation)}本人去辦</strong><p>你可以陪同、幫忙預約和準備文件。</p></div>` : ''}
     ${(proxy || forOther) && b.proxyAllowed ? `<section class="card"><h2>${forOther ? '請別人代辦時，另外要帶' : '你（代理人）另外要帶'}</h2>${docList(p, b, 'proxy', docsFor(b.proxyDocuments, p))}</section>` : ''}
 
     <div class="stack">
@@ -258,7 +267,9 @@ function renderCard(id) {
   const proxy = !isSelf(p);
   const ch = b.applyChannels.find((c) => c.type === '臨櫃');
   const office = ch ? officeFor(ch.where, p) : null;
-  const docs = [...docsFor(b.documents, p), ...(proxy ? docsFor(b.proxyDocuments, p) : [])];
+  const docs = [...docsFor(b.documents, p), ...(proxy && b.proxyAllowed ? docsFor(b.proxyDocuments, p) : [])];
+  // 不能代辦的補助（要本人去），代理人改稱「陪同家人」
+  const helperRole = b.proxyAllowed ? '代辦人' : '陪同家人';
   // 有些補助的申請人不是對象本人（例如生育補助由寶寶的媽媽申請）
   const applicant = b.applicantRole ? `${b.applicantRole}${b.applicantNote ? `（${b.applicantNote}）` : ''}` : p.name;
   const payload = {
@@ -266,7 +277,7 @@ function renderCard(id) {
     proxy: proxy && !b.applicantRole ? state.self.name : undefined, office: office?.name, docs, issuedAt: new Date().toISOString().slice(0, 10),
   };
   if (proxy) logAction({ actor: state.self.name, target: p.name, action: `產生「${b.name}」辦事小卡` });
-  const text = `【辦事小卡】${b.name}\n${b.applicantRole ? `對象：${p.name}\n` : ''}申請人：${applicant}${payload.proxy ? `\n代辦人：${state.self.name}` : ''}\n地點：${office ? `${office.name}（${office.address}，${office.phone}）` : ch?.label ?? ''}\n要帶：${docs.join('、')}\n受理期間：${b.period}`;
+  const text = `【辦事小卡】${b.name}\n${b.applicantRole ? `對象：${p.name}\n` : ''}申請人：${applicant}${payload.proxy ? `\n${helperRole}：${state.self.name}` : ''}\n地點：${office ? `${office.name}（${[office.address, office.phone].filter(Boolean).join('，')}）` : ch?.label ?? ''}\n要帶：${docs.join('、')}\n受理期間：${b.period}`;
 
   $view.innerHTML = `<div class="page">
     <a class="back" href="#/b/${esc(b.id)}">← 回到${esc(b.name)}</a>
@@ -276,8 +287,8 @@ function renderCard(id) {
       <dl class="kv">
         ${b.applicantRole ? `<dt>對象</dt><dd class="t-big">${esc(p.name)}</dd>` : ''}
         <dt>申請人</dt><dd class="t-big">${esc(applicant)}</dd>
-        ${payload.proxy ? `<dt>代辦人</dt><dd class="t-big">${esc(state.self.name)}</dd>` : ''}
-        <dt>地點</dt><dd>${office ? `${esc(office.name)}<br>${esc(office.address)}<br>${esc(office.phone)}` : esc(ch?.label ?? '')}</dd>
+        ${payload.proxy ? `<dt>${helperRole}</dt><dd class="t-big">${esc(state.self.name)}</dd>` : ''}
+        <dt>地點</dt><dd>${office ? [office.name, office.address, office.phone].filter(Boolean).map(esc).join('<br>') : esc(ch?.label ?? '')}</dd>
       </dl>
       <div><p class="t-big">要帶這些</p><ol class="t-docs">${docs.map((d) => `<li>${esc(d)}</li>`).join('')}</ol></div>
       <div class="qr" aria-label="辦事小卡 QR Code，內含補助名稱、申請人、地點與文件清單">${qrSvg(JSON.stringify(payload))}</div>
