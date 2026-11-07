@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>拿得到・2 分鐘 Demo</title>
+  <meta name="description" content="拿得到初選逐桌 2 分鐘 Demo 流程：操作、台詞與計時器。">
+  <style>
+    :root {
+      --p50: #edf8fa; --p100: #d4eef3; --p500: #5ab4c5; --p700: #2f8697; --p900: #1d5763;
+      --s50: #fef6e7; --s500: #f5ba4b; --s700: #a86b00;
+      --g50: #e9f6ee; --g700: #2e7d4f; --r50: #fdeeee; --r600: #c4343f;
+      --gray50: #f3f5f6; --gray100: #e6eaec; --gray300: #c4ced3; --gray500: #738995; --gray700: #4a5a63; --gray900: #1f2a30;
+      --font: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", Roboto, system-ui, sans-serif;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--gray50); color: var(--gray900); font-family: var(--font); font-size: 17px; line-height: 1.7; }
+    h1, h2, h3, p { margin: 0; }
+    a { color: var(--p700); }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 120px; }
+
+    header { padding: 28px 0 8px; }
+    .kicker { color: var(--p700); font-weight: 700; font-size: 14px; letter-spacing: .06em; }
+    h1 { font-size: clamp(28px, 5vw, 38px); color: var(--p900); margin: 4px 0 8px; }
+    .sub { color: var(--gray700); }
+    .goal { margin-top: 14px; background: #fff; border: 1px solid var(--gray100); border-left: 6px solid var(--p500); border-radius: 12px; padding: 12px 16px; }
+    .goal b { color: var(--p900); }
+
+    /* 計時器 */
+    .timer { position: sticky; top: 0; z-index: 5; margin: 16px -16px 0; padding: 10px 16px; background: rgba(243,245,246,.96); backdrop-filter: blur(6px); border-bottom: 1px solid var(--gray100); }
+    .timer .in { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .clock { font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 700; color: var(--p900); min-width: 92px; }
+    .clock.over { color: var(--r600); }
+    .track { flex: 1 1 200px; height: 10px; background: var(--gray100); border-radius: 999px; overflow: hidden; position: relative; }
+    .track span { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--p500); border-radius: inherit; transition: width .25s linear; }
+    .btn { min-height: 44px; padding: 6px 18px; border-radius: 12px; border: 2px solid var(--p500); background: var(--p500); color: #fff; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn.secondary { background: #fff; color: var(--p700); }
+    .btn:focus-visible { outline: 3px solid var(--s500); outline-offset: 2px; }
+    .now-label { width: 100%; font-size: 14px; color: var(--gray700); }
+
+    /* 準備 */
+    .prep { margin-top: 20px; background: var(--s50); border: 1px solid #f3dca8; border-radius: 14px; padding: 14px 18px; }
+    .prep h2 { font-size: 17px; color: var(--s700); margin-bottom: 4px; }
+    .prep ol { margin: 0; padding-left: 1.3em; }
+
+    /* 步驟 */
+    .steps { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 14px; }
+    .step { background: #fff; border: 2px solid var(--gray100); border-radius: 16px; padding: 16px 18px; transition: border-color .2s, box-shadow .2s, opacity .2s; }
+    .step.active { border-color: var(--p500); box-shadow: 0 6px 20px rgba(47,134,151,.18); }
+    .step.done { opacity: .55; }
+    .step .head { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 10px; }
+    .step .no { width: 34px; height: 34px; border-radius: 50%; background: var(--p700); color: #fff; font-weight: 700; display: inline-grid; place-items: center; flex: none; align-self: center; }
+    .step h2 { font-size: 21px; }
+    .time { font-size: 14px; font-weight: 700; color: var(--p700); background: var(--p50); border-radius: 999px; padding: 0 10px; font-variant-numeric: tabular-nums; }
+    .persona { font-size: 13px; font-weight: 700; color: var(--s700); background: var(--s50); border-radius: 999px; padding: 0 10px; }
+    .row { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+    .row + .row { margin-top: 10px; }
+    .row > b { font-size: 13px; color: var(--gray500); padding-top: 3px; }
+    .row ol { margin: 0; padding-left: 1.2em; }
+    .row li + li { margin-top: 2px; }
+    .say p { background: var(--p50); border-radius: 12px; padding: 10px 14px; font-size: 19px; line-height: 1.75; }
+    .say strong { color: var(--p900); }
+    .tap { display: inline-block; background: var(--gray100); border-radius: 6px; padding: 0 6px; font-weight: 700; }
+    .score { display: flex; flex-wrap: wrap; gap: 6px; }
+    .score span { font-size: 13px; border-radius: 999px; padding: 1px 10px; background: var(--g50); color: var(--g700); font-weight: 700; }
+
+    /* 備援 */
+    section.extra { margin-top: 28px; }
+    section.extra h2 { font-size: 21px; margin-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .card { background: #fff; border: 1px solid var(--gray100); border-radius: 14px; padding: 14px 16px; }
+    .card h3 { font-size: 17px; margin-bottom: 6px; }
+    .card ul { margin: 0; padding-left: 1.2em; }
+    .card li + li { margin-top: 4px; }
+    .qa details { background: #fff; border: 1px solid var(--gray100); border-radius: 12px; padding: 10px 16px; }
+    .qa details + details { margin-top: 8px; }
+    .qa summary { cursor: pointer; font-weight: 700; }
+    .qa p { margin-top: 6px; color: var(--gray700); }
+    footer { margin-top: 32px; font-size: 14px; color: var(--gray500); }
+
+    @media (max-width: 640px) {
+      .row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .say p { font-size: 18px; }
+    }
+    @media print {
+      body { background: #fff; font-size: 14px; }
+      .timer, .no-print { display: none !important; }
+      .wrap { padding-bottom: 0; }
+      .step { break-inside: avoid; border-width: 1px; opacity: 1 !important; box-shadow: none !important; }
+      .say p { font-size: 15px; }
+      .qa details { break-inside: avoid; }
+      .qa details:not([open]) p { display: block; }
+    }
+    @media (prefers-reduced-motion: reduce) { .track span, .step { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="kicker">初選・評審逐桌</p>
+      <h1>拿得到 2 分鐘 Demo</h1>
+      <p class="sub">全程用城市通 App 實際操作，不放投影片。一人操作手機，一人講；講的人照著藍底台詞說。</p>
+      <div class="goal"><b>2 分鐘要讓評審記住一件事：</b>城市通已經知道你是誰，所以補助可以<b>主動找到人</b>；沒手機的長輩、剛出生的孩子，由<b>經過同意的家人</b>幫忙辦。</div>
+    </header>
+
+    <div class="timer" role="region" aria-label="計時器">
+      <div class="in">
+        <span class="clock" id="clock" aria-live="off">0:00</span>
+        <div class="track" aria-hidden="true"><span id="bar"></span></div>
+        <button type="button" class="btn" id="start">開始計時</button>
+        <button type="button" class="btn secondary" id="reset">重來</button>
+        <p class="now-label" id="now">按「開始計時」排練，目前步驟會自動標示。</p>
+      </div>
+    </div>
+
+    <div class="prep">
+      <h2>上場前 1 分鐘</h2>
+      <ol>
+        <li>打開城市通 →「拿得到」暖機一次（第一次載入要 10 秒），回到城市通首頁待命。</li>
+        <li>拿得到 →「家人與代理」最下面按<b>重設示範資料</b>。</li>
+        <li>確認網路、手機亮度調高、通知開著；筆電開著 <a href="./about">服務介紹頁</a> 當備援。</li>
+        <li>要展示兩支手機時：第二支手機在「家人與代理」最下面切成<b>弟弟</b>，兩支都按一次重設示範資料。</li>
+      </ol>
+    </div>
+
+    <ol class="steps">
+      <li class="step" data-start="0" data-end="15">
+        <div class="head"><span class="no">1</span><h2>一句話說問題與解法</h2><span class="time">0:00–0:15</span></div>
+        <div class="row"><b>操作</b><p>手機停在城市通首頁，先不點。</p></div>
+        <div class="row say"><b>台詞</b><p>「補助拿不到，常常不是不符合，而是<strong>不知道、跑不了、接不到通知</strong>。城市通每個人都實名驗證過，所以我們做了『拿得到』：<strong>補助主動找人，家人可以代辦</strong>。」</p></div>
+      </li>
+
+      <li class="step" data-start="15" data-end="35">
+        <div class="head"><span class="no">2</span><h2>打開就知道能領什麼</h2><span class="time">0:15–0:35</span><span class="persona">本人</span></div>
+        <div class="row"><b>操作</b><ol><li>城市服務 → 點第一個 <span class="tap">拿得到</span></li><li>指著標題下的「依城市通實名資料比對」和三格摘要</li></ol></div>
+        <div class="row say"><b>台詞</b><p>「不用填表，App 已經知道我的年齡和戶籍。六項臺北市補助直接分成<strong>可能符合、再回答幾題、不符合</strong>，不符合也寫出原因。」</p></div>
+        <div class="row"><b>得分</b><div class="score"><span>服務應用：主動比對</span><span>技術：城市通 userinfo</span></div></div>
+      </li>
+
+      <li class="step" data-start="35" data-end="75">
+        <div class="head"><span class="no">3</span><h2>幫沒有手機的媽媽</h2><span class="time">0:35–1:15</span><span class="persona">長者</span></div>
+        <div class="row"><b>操作</b><ol>
+          <li>上方切到 <span class="tap">媽媽</span>，副標寫「臨櫃（文山區公所）授權」</li>
+          <li>在「說說媽媽的需要」點範例 <span class="tap">牙齒不好</span> → 假牙補助跳到第一，信心度 70%</li>
+          <li>點 <span class="tap">敬老愛心卡</span> → 滑到最近的文山區公所 → <span class="tap">產生辦事小卡</span></li>
+        </ol></div>
+        <div class="row say"><b>台詞</b><p>「媽媽 78 歲、獨居、沒有智慧型手機。她到區公所臨櫃授權一次，我就能幫她查。說一句『牙齒不好』，<strong>假牙補助</strong>就排到第一個，這項補助申請人數已經連三年下滑。敬老卡我直接產生<strong>辦事小卡</strong>，到櫃台拿出來，要帶的東西一次帶齊。」</p></div>
+        <div class="row"><b>得分</b><div class="score"><span>服務應用：代理＋保留臨櫃</span><span>視覺：大字、長輩友善</span><span>技術：信心度排序</span></div></div>
+      </li>
+
+      <li class="step" data-start="75" data-end="100">
+        <div class="head"><span class="no">4</span><h2>女兒的 60 天期限</h2><span class="time">1:15–1:40</span><span class="persona">兒童</span></div>
+        <div class="row"><b>操作</b><ol>
+          <li>回清單，上方切到 <span class="tap">女兒</span> → 生育補助 ✓ 可能符合，沒被問任何問題</li>
+          <li>點下方分頁 <span class="tap">通知</span> → 第一則「60 日內申請，還剩 N 天」→ <span class="tap">傳到手機通知</span></li>
+        </ol></div>
+        <div class="row say"><b>台詞</b><p>「女兒上個月出生，系統從生日算出還在 60 天內，直接判斷符合。期限倒數會<strong>推到手機通知</strong>，上班再忙也不會錯過。」</p></div>
+        <div class="row"><b>得分</b><div class="score"><span>服務應用：接不到通知</span><span>技術：城市通 notify</span></div></div>
+      </li>
+
+      <li class="step" data-start="100" data-end="120">
+        <div class="head"><span class="no">5</span><h2>收尾：信任與擴充</h2><span class="time">1:40–2:00</span></div>
+        <div class="row"><b>操作</b><p>停在手機通知畫面，或回到補助清單最下方的隱私說明。</p></div>
+        <div class="row say"><b>台詞</b><p>「比對都在<strong>手機上完成，資格和收入不上傳</strong>；六項補助的規則逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到，讓最需要的人<strong>拿得到</strong>。」</p></div>
+        <div class="row"><b>得分</b><div class="score"><span>技術：資料驅動規則</span><span>服務應用：隱私</span></div></div>
+      </li>
+    </ol>
+
+    <section class="extra">
+      <h2>評審還有時間時（加碼）</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>弟弟：兩支手機的代理（約 40 秒）</h3>
+          <ul>
+            <li><b>手機 A</b>：家人與代理 → 弟弟 →「邀請弟弟在自己的手機同意」→ 邀請碼</li>
+            <li><b>手機 B</b>（弟弟）：家人與代理 → 輸入邀請碼 → <b>只勾通知、查詢</b> → 同意</li>
+            <li><b>手機 A</b> 3 秒內變「已同意」→ 切到弟弟 → 回答「住在家裡」</li>
+            <li><b>手機 B</b> 立刻收到「金大森 代為回答…」；打開「代為申請」→ 手機 A 辦事小卡馬上能按</li>
+          </ul>
+          <p class="small" style="margin-top:6px">台詞：「同意權在弟弟自己手上，他開放多少我就能做多少；我做的每件事，他的手機都即時看得到。」</p>
+        </div>
+        <div class="card">
+          <h3>開地圖、撥電話（約 10 秒）</h3>
+          <ul>
+            <li>敬老愛心卡 → <b>撥電話</b>：直接撥給文山區公所</li>
+            <li><b>開地圖</b>：開手機內建地圖</li>
+            <li>假牙補助 → <b>在地圖找牙醫診所</b></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="extra qa">
+      <h2>常被問的 4 題（各 10 秒內答完）</h2>
+      <details><summary>判斷錯了怎麼辦？</summary><p>畫面一律寫「可能符合」，以受理單位審核為準；每項都附官方來源與查證日期，不確定的寫在「尚未確認」。</p></details>
+      <details><summary>有用 AI 嗎？</summary><p>沒有。資格是可追溯的規則；信心度是手機上的關鍵字權重計算，輸入的文字不存也不上傳。</p></details>
+      <details><summary>代理會不會被濫用？</summary><p>一定要本人同意（在自己的手機、臨櫃或監護人），四種權限可以只開一部分、隨時撤銷，每次代辦都即時推到本人手機。伺服器只存姓名、權限與代辦紀錄。</p></details>
+      <details><summary>市府怎麼接手、怎麼擴充？</summary><p>規則是 JSON 資料，加一筆就多一項補助，23 個自動測試把關；服務可以用 Docker 在市府機房執行。</p></details>
+    </section>
+
+    <footer class="no-print">
+      <p><a href="./about">完整服務介紹與 5 分鐘決選流程</a>・<a href="./">開啟拿得到</a>・<button type="button" class="btn secondary" onclick="window.print()">列印提詞卡</button></p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var TOTAL = 120;
+      var clock = document.getElementById('clock');
+      var bar = document.getElementById('bar');
+      var now = document.getElementById('now');
+      var startBtn = document.getElementById('start');
+      var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+      var t0 = null, paused = 0, timer = null;
+
+      function fmt(s) { s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+      function render(sec) {
+        clock.textContent = fmt(sec);
+        clock.classList.toggle('over', sec > TOTAL);
+        bar.style.width = Math.min(100, sec / TOTAL * 100) + '%';
+        var active = null;
+        steps.forEach(function (el) {
+          var a = +el.dataset.start, b = +el.dataset.end;
+          el.classList.toggle('active', sec >= a && sec < b);
+          el.classList.toggle('done', sec >= b);
+          if (sec >= a && sec < b) active = el;
+        });
+        if (sec > TOTAL) now.textContent = '已超過 2 分鐘，直接講收尾那一句。';
+        else if (active) now.textContent = '現在：' + active.querySelector('h2').textContent + '（剩 ' + Math.ceil(+active.dataset.end - sec) + ' 秒）';
+      }
+      function tick() { render(paused + (Date.now() - t0) / 1000); }
+      function scrollToActive() {
+        var el = document.querySelector('.step.active');
+        if (el && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      var lastActive = null;
+      startBtn.addEventListener('click', function () {
+        if (timer) {
+          paused += (Date.now() - t0) / 1000; clearInterval(timer); timer = null;
+          startBtn.textContent = '繼續';
+          return;
+        }
+        t0 = Date.now();
+        timer = setInterval(function () {
+          tick();
+          var a = document.querySelector('.step.active');
+          if (a !== lastActive) { lastActive = a; scrollToActive(); }
+        }, 250);
+        startBtn.textContent = '暫停';
+        tick(); scrollToActive();
+      });
+      document.getElementById('reset').addEventListener('click', function () {
+        clearInterval(timer); timer = null; paused = 0; lastActive = null;
+        startBtn.textContent = '開始計時';
+        steps.forEach(function (el) { el.classList.remove('active', 'done'); });
+        clock.textContent = '0:00'; clock.classList.remove('over'); bar.style.width = '0';
+        now.textContent = '按「開始計時」排練，目前步驟會自動標示。';
+      });
+    })();
+  </script>
+</body>
+</html>

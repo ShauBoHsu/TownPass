@@ -198,11 +198,12 @@
         <div class="btns">
           <a class="btn" href="./" target="_blank" rel="noopener">開啟實際服務</a>
           <a class="btn secondary" href="#demo">看 Demo 流程</a>
+          <a class="btn secondary" href="./demo">2 分鐘 Demo 提詞卡</a>
         </div>
         <div class="facts" aria-label="服務重點數字">
           <div class="fact"><strong>6</strong><span>項臺北市補助，規則逐條對照官方來源</span></div>
           <div class="fact"><strong>3</strong><span>種代理對象：長者、兒童、身心障礙</span></div>
-          <div class="fact"><strong>0</strong><span>筆個資上傳，比對都在手機上完成</span></div>
+          <div class="fact"><strong>0</strong><span>筆資格、收入、回答上傳，比對都在手機上完成</span></div>
           <div class="fact"><strong>27</strong><span>個區公所、戶政事務所、輔具中心窗口</span></div>
         </div>
       </header>
@@ -276,6 +277,7 @@
             <li>摘要三格：<span class="chip ok">✓ 可能符合</span> <span class="chip ask">? 再回答幾題</span> <span class="chip no">✕ 不符合</span>，並說明原因（例如「原因：年滿 65 歲」）。</li>
             <li>「回答一題，就能知道更多結果」：系統挑出影響最多補助、而且離結論最近的那一題。已列冊的低收入戶，就不會再被問收入與財產。</li>
             <li><b>說說你的需要</b>：輸入「牙齒不好」「需要輪椅」這類一句話，每項補助會算出<b>信心度</b>並重新排序，也會寫出是因為提到哪些字。用關鍵字權重在手機上計算，不用 AI、不上傳。</li>
+            <li><b>已領取</b>：領到後勾選「已經領到了」，卡片變成綠色並標上「✓ 已領取」與日期，通知不再提醒；代理家人要有「代為領取」權限才能勾，並記入代理紀錄。</li>
             <li>代理家人還沒同意時，只顯示「等待同意」，看不到任何資格結果。</li>
           </ul>
           <div class="try"><button type="button" class="btn small secondary" data-go="#/" data-as="self">在手機上看</button></div>
@@ -312,6 +314,7 @@
           <p class="where">分頁「家人與代理」・路徑 <code>#/family</code></p>
           <ul>
             <li>三種同意方式：對方在自己的城市通按同意；沒有手機的長輩到<b>區公所臨櫃</b>辦理；孩子由<b>監護人</b>代理。</li>
+            <li><b>兩支手機即時同步</b>：代理人產生 6 位數邀請碼與 QR Code，家人在自己的城市通輸入或掃描，選擇要開放的權限後按同意；之後權限調整、撤銷、代辦紀錄都在 3 秒內同步到對方手機，並發城市通通知。</li>
             <li>四種權限可以分開開關：接收補助通知、查詢資格、代為申請、代為領取。</li>
             <li>撤銷代理要按兩次確認。每一次代辦（代答問題、產生小卡、同意、撤銷）都寫進<b>代理紀錄</b>，被代理的家人也看得到。</li>
           </ul>
@@ -404,11 +407,11 @@
               <div class="box ms"><b>本機儲存</b>家人、回答、代理紀錄只存在 localStorage</div>
             </div>
           </div>
-          <div class="arrow">只下載靜態檔與規則，不上傳個資</div>
+          <div class="arrow">資格、收入、回答不上傳；只同步代理授權與代辦紀錄</div>
           <div class="tier">
             <div class="label">服務端<span>Hono</span></div>
             <div class="boxes">
-              <div class="box"><b>Cloudflare Workers</b>靜態資源與 <code>/api/health</code></div>
+              <div class="box"><b>Cloudflare Workers＋D1</b>靜態資源、代理授權同步 <code>/api/links</code></div>
               <div class="box dev"><b>Node.js／Docker</b>同一份程式，可搬到市府機房</div>
               <div class="box"><b>規則與窗口資料</b><code>benefits.json</code> <code>questions.json</code> <code>offices.json</code></div>
             </div>
@@ -453,8 +456,10 @@
       <section class="block" id="privacy" aria-labelledby="h-privacy">
         <p class="kicker">隱私與信任</p>
         <h2 id="h-privacy">比對資格要用到敏感資料，所以我們不收</h2>
+        <p class="lead">伺服器只存兩支手機同步代理需要的最少資料：雙方姓名、開放的權限、代辦紀錄。</p>
         <ul class="checklist" style="margin-top:14px">
-          <li><b>比對在手機上完成</b>：實名資料、收入自評、家人資料都不上傳伺服器，伺服器只提供網頁與公開的規則。</li>
+          <li><b>比對在手機上完成</b>：生日、戶籍、收入自評、回答與資格結果都不上傳，伺服器只提供網頁與公開的規則。</li>
+          <li><b>代理授權是唯一同步的資料</b>：為了讓家人在自己的手機同意、調整、撤銷，伺服器存雙方姓名、權限與代辦紀錄（例如「代為回答了哪一題」，不含答案）。</li>
           <li><b>代理一定要同意</b>：對方沒同意前看不到任何結果；權限分四種，可以隨時調整或撤銷。</li>
           <li><b>代辦留紀錄</b>：誰在什麼時候替誰做了什麼，被代理的家人看得到。</li>
           <li><b>辦事小卡不含身分證字號</b>，QR Code 只有補助名稱、申請人、地點與文件清單。</li>
@@ -495,7 +500,7 @@
           <h3>上台前準備</h3>
           <ol>
             <li>城市通 App 先開過一次「拿得到」暖機（第一次載入約 10 秒），再回到首頁待命。</li>
-            <li>在「家人與代理」最下面按「重設示範資料」，讓弟弟回到「等待同意」、代理紀錄清空。</li>
+            <li>兩支手機都在「家人與代理」最下面按「重設示範資料」。第二支手機先在同一頁「示範：這支手機是誰的？」切成<b>弟弟</b>（只要切一次）。</li>
             <li>確認網路正常；手機音量關閉、勿擾模式開啟，但保留城市通通知。</li>
             <li>備援：筆電開這一頁，右邊的手機就是同一個服務，App 出狀況時改用這裡展示。</li>
           </ol>
@@ -539,10 +544,10 @@
           </li>
 
           <li class="step">
-            <div class="head"><h3>弟弟：本人同意，也保有自己的決定</h3><span class="time">3:20–4:20</span><span class="persona">身心障礙</span></div>
+            <div class="head"><h3>弟弟：兩支手機，本人同意、自己決定</h3><span class="time">3:20–4:20</span><span class="persona">身心障礙・兩支手機</span></div>
             <div class="body">
-              <div class="do"><b>操作</b><ol><li>切到「弟弟」→ 顯示「等待弟弟同意代理」，什麼結果都看不到。</li><li>按「示範：金小華已同意」→ 低收入戶生活扶助 ✓；身心障礙者生活補助只剩一題。</li><li>回答「目前住在家裡」→ 身障生活補助變成 ✓ 可能符合。</li><li>下一題自動變成「有需要的輔具嗎？」→ 回答有需要 → 再問「這項輔具還沒買嗎？」，提示一定要先申請、核准後才能買。</li><li>點進去：「產生辦事小卡」是停用的，因為弟弟只開放查詢，沒有開放代為申請。</li><li>回「家人與代理」→ 代理紀錄列出剛剛的同意與代答。</li></ol></div>
-              <div class="say"><b>台詞</b><p>「弟弟是成年人，要他自己在城市通按同意，我才看得到。他已經是列冊低收入戶，所以不用再問收入財產，只差一題就有結果。他只讓我查、不讓我代辦，App 就照他的意思做；我做的每一件事，他都看得到紀錄。輔具補助很多人拿不到，是因為先買了才來申請；App 在買之前就提醒。」</p></div>
+              <div class="do"><b>操作</b><ol><li><b>手機 A</b>（哥哥）：家人與代理 → 弟弟 →「邀請弟弟在自己的手機同意」→ 出現 6 位數邀請碼與 QR Code。</li><li><b>手機 B</b>（弟弟）：拿得到 → 家人與代理 → 輸入邀請碼（或掃 QR Code）→ 看到「金大森想幫你處理補助」→ <b>取消勾選「代為申請」「代為領取」</b> → 同意。</li><li><b>手機 A</b> 3 秒內自動變成「已同意」，跳出通知。切到弟弟 → 低收入戶生活扶助 ✓；身心障礙者生活補助只剩一題。</li><li>回答「目前住在家裡」→ 身障生活補助變成 ✓ 可能符合。</li><li>下一題自動變成「有需要的輔具嗎？」→ 回答有需要 → 再問「這項輔具還沒買嗎？」，提示一定要先申請、核准後才能買。</li><li>點進去：「產生辦事小卡」是停用的，因為弟弟只開放查詢，沒有開放代為申請。</li><li><b>手機 B</b>：「我的代理人」即時出現「金大森 代為回答…」並收到通知；弟弟打開「代為申請」→ <b>手機 A</b> 的辦事小卡按鈕馬上可以按。</li></ol></div>
+              <div class="say"><b>台詞</b><p>「弟弟是成年人，要他在<strong>自己的手機</strong>按同意，我才看得到，而且他可以只開放一部分。他已經是列冊低收入戶，所以不用再問收入財產，只差一題就有結果。他只讓我查、不讓我代辦，App 就照他的意思做；我幫他做的每一件事，他的手機都即時收到；他隨時可以多開或收回權限。輔具補助很多人拿不到，是因為先買了才來申請；App 在買之前就提醒。」</p></div>
               <div class="see"><b>按鈕</b><p class="btns"><button type="button" class="btn small secondary" data-go="#/" data-as="brother">弟弟的補助</button><button type="button" class="btn small secondary" data-go="#/b/disability-allowance" data-as="brother">身障生活補助</button><button type="button" class="btn small secondary" data-go="#/b/assistive-device" data-as="brother">輔具補助</button><button type="button" class="btn small secondary" data-go="#/family">代理紀錄</button></p></div>
             </div>
           </li>
@@ -550,8 +555,8 @@
           <li class="step">
             <div class="head"><h3>收尾：隱私、資料、可以擴充</h3><span class="time">4:20–5:00</span></div>
             <div class="body">
-              <div class="do"><b>操作</b><p>回到補助清單，指出最下面「比對在這支手機上完成，個資不會上傳」，再點一項補助最下面的官方來源。</p></div>
-              <div class="say"><b>台詞</b><p>「所有比對都在手機上做，個資不上傳。六項補助的規則都逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到把『人找補助』變成『補助找人』，再讓家人幫忙把最後一段路走完。」</p></div>
+              <div class="do"><b>操作</b><p>回到補助清單，指出最下面「比對在這支手機上完成」，再點一項補助最下面的官方來源。</p></div>
+              <div class="say"><b>台詞</b><p>「所有比對都在手機上做，資格和收入不上傳，伺服器只同步代理授權。六項補助的規則都逐條對照官方來源並標示查證日期，新增補助只要加一筆規則。拿得到把『人找補助』變成『補助找人』，再讓家人幫忙把最後一段路走完。」</p></div>
             </div>
           </li>
         </ol>
@@ -563,14 +568,14 @@
             <li>打開拿得到 → 補助清單三格摘要（本人）。</li>
             <li>家人與代理 → 媽媽臨櫃授權 → 敬老愛心卡、假牙補助 → 辦事小卡。</li>
             <li>通知 → 女兒生育補助 60 天倒數 → 傳到手機通知。</li>
-            <li>收尾：個資不上傳、規則對照官方來源。評審有興趣再展示弟弟的同意與權限。</li>
+            <li>收尾：資格與收入不上傳、規則對照官方來源。評審有興趣再用兩支手機展示弟弟的同意與權限。</li>
           </ol>
         </div>
 
         <h3 style="margin:28px 0 10px;font-size:20px">評審可能會問</h3>
         <div class="qa">
           <details><summary>判斷錯了怎麼辦？資料多正確？</summary><p>畫面一律寫「可能符合」，最後以受理單位審核為準。每項補助附官方來源與查證日期，查不到的寫在「尚未確認」。規則是可追溯的條件，不是黑箱模型。</p></details>
-          <details><summary>收入、財產這些敏感資料怎麼處理？</summary><p>只在使用者手機上計算與儲存，不上傳伺服器。伺服器只提供網頁和公開的規則檔。</p></details>
+          <details><summary>收入、財產這些敏感資料怎麼處理？</summary><p>只在使用者手機上計算與儲存，不上傳伺服器。伺服器只提供網頁、公開的規則檔，以及代理授權（姓名、權限、代辦紀錄）。</p></details>
           <details><summary>代理會不會被濫用？</summary><p>一定要本人同意（App 按同意、臨櫃或監護人），權限分四種可以只開一部分，隨時撤銷，每次代辦都有紀錄給本人看。正式上線可以接市府的委任或監護資料做驗證。</p></details>
           <details><summary>沒有手機的長輩怎麼用？</summary><p>不需要手機。長輩到區公所臨櫃授權一次，後續由家人代理接收通知與準備文件；臨櫃管道依然保留，辦事小卡讓一次跑就辦成。</p></details>
           <details><summary>跟現有的台北通、1999 有什麼不同？</summary><p>現有管道多半要自己先知道有哪些補助、再去查。拿得到用城市通已驗證的資料主動比對，並把家人代理、期限提醒、臨櫃準備串成一條流程。</p></details>

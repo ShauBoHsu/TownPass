@@ -9,5 +9,9 @@
     "directory": "./public/",
     "run_worker_first": ["/api/*"]
   },
+  // 代理授權同步（兩支手機之間）：只存授權狀態與代辦紀錄
+  "d1_databases": [
+    { "binding": "DB", "database_name": "nadedao-proxy", "database_id": "56ee4533-40f3-47f1-9672-8096efa8e37e", "migrations_dir": "migrations" }
+  ],
   "observability": { "enabled": true }
 }

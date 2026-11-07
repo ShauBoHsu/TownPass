@@ -2,8 +2,11 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { createApp } from './app.js';
+import { memoryStore } from './links.js';
 
-const app = createApp('node');
+// 代理授權用記憶體儲存（重開清空）；正式環境可換成資料庫
+const store = memoryStore();
+const app = createApp('node', () => store);
 app.use('/*', serveStatic({ root: './public' }));
 
 const port = Number(process.env.PORT) || 8080;

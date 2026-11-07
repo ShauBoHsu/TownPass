@@ -19,7 +19,9 @@
 
 ## 隱私
 
-- 補助比對在使用者手機上完成，**個資不會上傳**；後端只有健康檢查 API。
+- 補助比對在使用者手機上完成，**生日、戶籍、收入自評、回答與資格結果都不會上傳**。
+- 後端只做代理授權同步（`/api/links`，Cloudflare D1）：雙方姓名、開放的權限、代辦紀錄，讓家人在自己的手機同意、調整、撤銷；代辦紀錄只寫「代為回答了哪一題」，不含答案。
+- 邀請碼 6 位數、24 小時內有效；同意後雙方各有自己的金鑰，只有被代理人能調整權限，雙方都能撤銷。
 - 家人資料、回答、代理紀錄只存在這支手機的瀏覽器儲存空間。
 - 結果標示「可能符合」，最後以受理單位審核為準。
 
@@ -27,8 +29,9 @@
 
 ```bash
 npm install
-npm test         # 比對引擎與正式規則的測試（13 項）
+npm test         # 比對引擎、正式規則、信心度、代理授權 API 的測試（25 項）
 npm run dev      # 本機（wrangler dev）
+npx wrangler d1 migrations apply nadedao-proxy --remote   # 第一次部署前：建立代理授權資料表
 npm run deploy   # 部署到 Cloudflare Workers
 npm start        # 以 Node 執行（http://localhost:8080）
 docker build -t nadedao . && docker run -p 8080:8080 nadedao

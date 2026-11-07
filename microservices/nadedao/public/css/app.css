@@ -217,3 +217,38 @@ details > summary { cursor: pointer; min-height: 44px; display: flex; align-item
 .need-score .bar span { display: block; height: 100%; background: var(--primary-500); border-radius: inherit; }
 .need-score.none { color: var(--gray-500); }
 a.card.faded { opacity: .7; }
+
+/* 已領取：卡片換成綠色系，標示「已領取」 */
+.benefit-card { padding: 0; gap: 0; overflow: hidden; }
+.benefit-card .card-link { display: grid; gap: 10px; padding: 16px; color: inherit; text-decoration: none; }
+.benefit-card .card-link:active { background: var(--primary-50); }
+.benefit-card > .claim-toggle { margin: 0 16px 14px; }
+.benefit-card > .claim-toggle + p { margin: -8px 16px 14px; }
+.benefit-card.claimed { background: var(--green-50); border-color: #b9dfc7; }
+.benefit-card.claimed h3 { color: var(--green-700); }
+.benefit-card.claimed .reason { color: var(--green-700); }
+.status.claimed { background: var(--green-700); color: var(--white); }
+.banner.claimed { background: var(--green-50); color: var(--green-700); border: 1px solid #b9dfc7; }
+.claim-toggle {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 14px;
+  border: 2px dashed var(--gray-300); border-radius: 12px; background: var(--white); cursor: pointer; font-weight: 700;
+}
+.claim-toggle input { width: 24px; height: 24px; accent-color: var(--green-700); flex: none; }
+.claim-toggle:has(input:checked) { border-style: solid; border-color: var(--green-700); color: var(--green-700); }
+.claim-toggle.compact { min-height: 44px; font-size: 15px; }
+.claim-toggle.disabled { cursor: not-allowed; color: var(--gray-500); }
+
+/* 兩支手機的代理：邀請碼、QR Code、示範身分 */
+.invite { display: grid; gap: 8px; justify-items: center; text-align: center; background: var(--primary-50); border-radius: 12px; padding: 14px; }
+.code { font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+.code.big { font-size: 36px; font-weight: 700; color: var(--primary-700); line-height: 1.2; }
+.small-qr { width: 160px; }
+.small-qr svg { width: 100%; height: auto; display: block; background: var(--white); border-radius: 8px; }
+.waiting { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .waiting { animation: none; } }
+.demo-as { text-align: center; }
+.my-proxy { border-top: 1px solid var(--gray-100); padding-top: 12px; }
+.small-h { font-size: 16px; margin-top: 4px; }
+.invite-form { border-top: 1px solid var(--gray-100); padding-top: 12px; }
+.demo-switch summary { cursor: pointer; }

@@ -1,8 +1,8 @@
 // 拿得到：畫面與流程（hash 路由）
 import { factsFrom, evaluateAll, evaluateBenefit, evaluateCondition, nextQuestion, ageFrom, daysSince } from './engine.js';
-import { inApp, getSelfProfile, notify, phoneCall, openMap } from './bridge.js';
+import { inApp, getSelfProfile, notify, phoneCall, openMap, callApp } from './bridge.js';
 import { rankByNeed } from './need.js';
-import { load, save, logAction } from './store.js';
+import { load, save, logAction, setNamespace, loadGlobal, saveGlobal } from './store.js';
 
 const $view = document.getElementById('view');
 const TOWNS = ['中正區', '大同區', '中山區', '松山區', '大安區', '萬華區', '信義區', '士林區', '北投區', '內湖區', '南港區', '文山區'];
@@ -19,7 +19,9 @@ const PERMS = [
 ];
 
 // need：「說說你的需要」輸入的文字，只放在記憶體，不存也不上傳
-const state = { benefits: [], questions: {}, offices: {}, self: null, family: [], need: '' };
+// demoAs：這支手機在示範中扮演誰（null＝本人；'brother'＝弟弟的手機）
+// myLinks：別人代理我的授權（被代理人這一端），只存邀請碼與金鑰
+const state = { benefits: [], questions: {}, offices: {}, self: null, family: [], need: '', demoAs: null, myLinks: [] };
 const NEED_EXAMPLES = ['牙齒不好', '需要輪椅', '剛生寶寶', '想搭公車', '失業繳不起房租'];
 
 // ---------- 小工具 ----------
@@ -53,9 +55,30 @@ function setAnswer(p, key, value) {
   } else {
     p.answers = { ...p.answers, [key]: value };
     save('family', state.family);
-    logAction({ actor: state.self.name, target: p.name, action: `代為回答「${state.questions[key]?.text ?? key}」` });
+    record(p, `代為回答「${state.questions[key]?.text ?? key}」`);
   }
 }
+/** 領取紀錄：{ 家人 id: { 補助 id: 'YYYY-MM-DD' } }，只存在這支手機 */
+const claimedOf = (p) => load('claimed', {})[p.id] ?? {};
+function setClaimed(p, benefitId, on) {
+  const all = load('claimed', {});
+  const mine = { ...(all[p.id] ?? {}) };
+  if (on) mine[benefitId] = new Date().toISOString().slice(0, 10);
+  else delete mine[benefitId];
+  save('claimed', { ...all, [p.id]: mine });
+}
+const fmtDate = (iso) => { const [, m, d] = iso.split('-'); return `${Number(m)}/${Number(d)}`; };
+
+/** 勾選「已領取」；代理家人要有「代為領取」權限 */
+function claimToggle(p, b, compact = false) {
+  const date = claimedOf(p)[b.id];
+  const allowed = can(p, 'collect');
+  return `<label class="claim-toggle${compact ? ' compact' : ''}${allowed ? '' : ' disabled'}">
+    <input type="checkbox" data-claim="${esc(b.id)}" ${date ? 'checked' : ''} ${allowed ? '' : 'disabled'}>
+    <span>${date ? `已領取（${fmtDate(date)}）` : '已經領到了'}</span>
+  </label>${allowed ? '' : `<p class="small muted">${esc(p.relation)}沒有開放「代為領取」，由${esc(p.name)}自己勾選。</p>`}`;
+}
+
 /** 文件可以是字串，或 { text, when }：when 條件符合才需要（例如原住民才要戶口名簿） */
 function docsFor(items, p) {
   const facts = factsFor(p);
@@ -69,13 +92,96 @@ function officeFor(where, p) {
   return table?.[p.town] ?? null;
 }
 
+// ---------- 代理授權同步（兩支手機） ----------
+async function api(method, path, body, token) {
+  const res = await fetch(`./api${path}`, {
+    method,
+    headers: { 'content-type': 'application/json', ...(token ? { 'x-link-token': token } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `連線失敗（${res.status}）`);
+  return data;
+}
+
+/** 代理人做的事：記在本機，也送到被代理人的手機（有經過 App 同意的家人） */
+function record(p, action) {
+  logAction({ actor: state.self.name, target: p.name, action });
+  if (p.link?.token && p.consent === 'granted') {
+    api('POST', `/links/${p.link.code}/log`, { action }, p.link.token).catch(() => { /* 離線時只留本機紀錄 */ });
+  }
+}
+
+const CONSENT_LABEL = { granted: '已同意', pending: '等待同意', revoked: '已撤銷', declined: '已拒絕' };
+const permsText = (perms) => PERMS.filter(([k]) => perms?.[k]).map(([, l]) => l).join('、') || '沒有開放任何權限';
+
+/** 每 3 秒同步一次：代理人看對方是否同意、權限變了沒；被代理人看新的代辦紀錄 */
+async function syncLinks() {
+  if (document.visibilityState === 'hidden') return;
+  let changed = false;
+  for (const p of state.family) {
+    if (!p.link) continue;
+    try {
+      const { link, logs } = await api('GET', `/links/${p.link.code}`, null, p.link.token);
+      const before = `${p.consent}|${JSON.stringify(p.permissions)}`;
+      const wasGranted = p.consent === 'granted';
+      p.consent = link.status;
+      if (link.status === 'granted') p.permissions = link.permissions;
+      p.link.logs = (logs ?? []).filter((l) => l.actor !== state.self.name);
+      if (`${p.consent}|${JSON.stringify(p.permissions)}` !== before) {
+        changed = true;
+        const msg = link.status === 'granted'
+          ? wasGranted ? `${p.name}調整了代理權限（開放：${permsText(link.permissions)}）` : `${p.name}已在自己的手機同意代理（${permsText(link.permissions)}）`
+          : link.status === 'revoked' ? `${p.name}已撤銷代理` : link.status === 'declined' ? `${p.name}拒絕了代理邀請` : '';
+        if (msg) { toast(msg); notify('拿得到・代理', msg); }
+      }
+    } catch { /* 網路不穩時下次再試 */ }
+  }
+  for (const m of state.myLinks) {
+    try {
+      const { link, logs } = await api('GET', `/links/${m.code}`, null, m.token);
+      const fresh = (logs ?? []).filter((l) => l.actor === link.proxyName && l.at > (m.lastSeenAt ?? ''));
+      if (JSON.stringify(m.view) !== JSON.stringify(link) || (logs?.length ?? 0) !== (m.logs?.length ?? 0)) changed = true;
+      m.view = link;
+      m.logs = logs ?? [];
+      if (fresh.length) {
+        m.lastSeenAt = fresh[0].at;
+        const msg = `${fresh[0].actor}${fresh[0].action}`;
+        toast(msg);
+        notify('拿得到・代理人幫你做了一件事', msg);
+      }
+    } catch { /* 網路不穩時下次再試 */ }
+  }
+  if (changed) {
+    save('family', state.family);
+    save('myLinks', state.myLinks.map(({ code, token, proxyName, lastSeenAt }) => ({ code, token, proxyName, lastSeenAt })));
+    rerender();
+  }
+}
+
+/** 同步後重畫目前的畫面（不捲動、不打斷輸入；辦事小卡不重畫，避免重複記錄） */
+function rerender() {
+  const page = (location.hash || '#/').split('/')[1];
+  if (page === 'card' || page === 'invite') return;
+  if (document.activeElement?.matches?.('input[type="search"], input[type="text"], input[inputmode]')) return;
+  const y = window.scrollY;
+  route(false);
+  window.scrollTo(0, y);
+}
+
+function demoBanner() {
+  return state.demoAs
+    ? `<div class="banner warn demo-as"><strong>示範：這支手機是${esc(state.self.name)}（弟弟）的城市通</strong></div>`
+    : '';
+}
+
 // ---------- 共用元件 ----------
 function whoBar(active) {
   return `<div class="who-bar" role="group" aria-label="查看誰的補助">
     ${profiles().map((p) => `
       <button type="button" class="who-chip" data-who="${esc(p.id)}" aria-pressed="${p.id === active.id}">
         <strong>${esc(isSelf(p) ? '我' : p.relation)}</strong>
-        <span class="${p.consent === 'pending' ? 'pending' : ''}">${esc(p.name)}${p.consent === 'pending' ? '・等待同意' : ''}</span>
+        <span class="${!isSelf(p) && p.consent !== 'granted' ? 'pending' : ''}">${esc(p.name)}${!isSelf(p) && p.consent !== 'granted' ? `・${CONSENT_LABEL[p.consent] ?? '等待同意'}` : ''}</span>
       </button>`).join('')}
   </div>`;
 }
@@ -104,6 +210,14 @@ function reasonOf(r) {
 }
 
 function consentBanner(p) {
+  if (p.consent === 'revoked' || p.consent === 'declined') {
+    return `<div class="banner danger"><strong>${esc(p.name)}${p.consent === 'revoked' ? '已撤銷代理' : '拒絕了代理邀請'}</strong>
+      <p>你看不到${esc(p.relation)}的資格結果。需要的話，可以到「家人與代理」重新邀請。</p></div>`;
+  }
+  if (p.consent === 'pending' && p.link) {
+    return `<div class="banner warn"><strong>等待${esc(p.relation)}在自己的手機同意</strong>
+      <p>邀請碼 <b class="code">${esc(p.link.code)}</b>，到「家人與代理」可以看 QR Code。</p></div>`;
+  }
   if (p.consent === 'pending') {
     return `<div class="banner warn"><strong>等待${esc(p.relation)}同意代理</strong>
       <p>${esc(p.name)}要在自己的城市通按「同意」，或到區公所臨櫃辦理，你才能查詢與代辦。</p>
@@ -114,9 +228,11 @@ function consentBanner(p) {
 }
 
 // ---------- 畫面：補助清單 ----------
-function benefitListHtml(results) {
+function benefitListHtml(results, p) {
   const ranked = rankByNeed(results, state.need);
+  const claimed = claimedOf(p);
   return ranked.map((r) => {
+    const date = claimed[r.benefit.id];
     const n = r.need;
     const needLine = n
       ? `<div class="need-score${n.confidence ? '' : ' none'}">
@@ -124,14 +240,19 @@ function benefitListHtml(results) {
           <span>信心度 ${n.confidence}%${n.matched.length ? `・因為提到「${n.matched.map(esc).join('、')}」` : '・跟你說的需要關係不大'}</span>
         </div>`
       : '';
-    return `<a class="card${n && !n.confidence ? ' faded' : ''}" href="#/b/${esc(r.benefit.id)}">
-      <div class="benefit-head">
-        <h3>${esc(r.benefit.name)}</h3>
-        <span class="status ${r.status}">${STATUS[r.status].icon} ${STATUS[r.status].label}</span>
-      </div>
-      <p class="reason">${esc(reasonOf(r))}</p>
-      ${needLine}
-    </a>`;
+    return `<div class="card benefit-card${date ? ' claimed' : ''}${n && !n.confidence && !date ? ' faded' : ''}">
+      <a class="card-link" href="#/b/${esc(r.benefit.id)}">
+        <div class="benefit-head">
+          <h3>${esc(r.benefit.name)}</h3>
+          ${date
+            ? '<span class="status claimed">✓ 已領取</span>'
+            : `<span class="status ${r.status}">${STATUS[r.status].icon} ${STATUS[r.status].label}</span>`}
+        </div>
+        <p class="reason">${date ? `${fmtDate(date)} 已領取・${esc(r.benefit.amount)}` : esc(reasonOf(r))}</p>
+        ${needLine}
+      </a>
+      ${date || r.status === 'eligible' ? claimToggle(p, r.benefit, true) : ''}
+    </div>`;
   }).join('');
 }
 
@@ -152,16 +273,17 @@ function needBox(p) {
 function updateBenefitList() {
   const list = document.getElementById('benefit-list');
   if (!list) return;
-  list.innerHTML = benefitListHtml(evaluateAll(state.benefits, factsFor(current())));
+  list.innerHTML = benefitListHtml(evaluateAll(state.benefits, factsFor(current())), current());
 }
 
 function renderHome() {
   const p = current();
   let html = `<div class="page">
+    ${demoBanner()}
     <header class="stack">
       <h1>${isSelf(p) ? '你可能可以領的補助' : `${esc(p.relation)}可能可以領的補助`}</h1>
       <p class="small muted">${isSelf(p)
-        ? `依城市通實名資料比對（${state.self.source === 'app' ? `驗證等級 ${esc(state.self.verifyLevel ?? '')}` : '瀏覽器測試帳號'}）`
+        ? `依城市通實名資料比對（${state.demoAs ? '示範身分' : state.self.source === 'app' ? `驗證等級 ${esc(state.self.verifyLevel ?? '')}` : '瀏覽器測試帳號'}）`
         : `你是${esc(p.name)}的代理人・${esc(p.consentChannel ?? '')}授權`}</p>
     </header>
     ${whoBar(p)}`;
@@ -182,8 +304,8 @@ function renderHome() {
     </div>
     ${q ? questionCard(p, q) : ''}
     ${needBox(p)}
-    <div class="stack" id="benefit-list" aria-live="polite">${benefitListHtml(results)}</div>
-    <p class="footnote">比對在這支手機上完成，個資不會上傳。結果僅供參考，以區公所、戶政事務所審核為準。</p>
+    <div class="stack" id="benefit-list" aria-live="polite">${benefitListHtml(results, p)}</div>
+    <p class="footnote">比對在這支手機上完成，資格與回答不會上傳。結果僅供參考，以區公所、戶政事務所審核為準。</p>
   </div>`;
   $view.innerHTML = html;
 }
@@ -253,6 +375,7 @@ function renderDetail(id) {
   const forOther = !!b.applicantRole;
   // 孩子自己不會收通知；只有可以自己看通知的家人才會「一起收到」
   const bothNotified = proxy && !forOther && (ageFrom(p.birthday, today()) ?? 99) >= 12;
+  const claimedDate = claimedOf(p)[b.id];
   $view.innerHTML = `<div class="page">
     <a class="back" href="#/">← 回到補助清單</a>
     <header class="stack">
@@ -260,7 +383,10 @@ function renderDetail(id) {
       <h1>${esc(b.name)}</h1>
       <p>${esc(b.summary)}</p>
     </header>
-    <div class="banner ${bannerCls}"><strong>${STATUS[r.status].icon} ${esc(bannerText)}</strong><p>${esc(b.amount)}</p></div>
+    ${claimedDate
+      ? `<div class="banner claimed"><strong>✓ ${esc(whoName(p))}已在 ${fmtDate(claimedDate)} 領取</strong><p>${esc(b.amount)}</p></div>`
+      : `<div class="banner ${bannerCls}"><strong>${STATUS[r.status].icon} ${esc(bannerText)}</strong><p>${esc(b.amount)}</p></div>`}
+    ${claimedDate || r.status === 'eligible' ? `<section class="card">${claimToggle(p, b)}</section>` : ''}
 
     <section class="card"><h2>條件</h2><ul class="checks">${r.checks.map((c) => checkItem(c, p)).join('')}</ul></section>
 
@@ -312,7 +438,7 @@ function renderCard(id) {
     app: 'nadedao', v: 1, benefit: b.name, for: p.name, applicant,
     proxy: proxy && !b.applicantRole ? state.self.name : undefined, office: office?.name, docs, issuedAt: new Date().toISOString().slice(0, 10),
   };
-  if (proxy) logAction({ actor: state.self.name, target: p.name, action: `產生「${b.name}」辦事小卡` });
+  if (proxy) record(p, `產生「${b.name}」辦事小卡`);
   const text = `【辦事小卡】${b.name}\n${b.applicantRole ? `對象：${p.name}\n` : ''}申請人：${applicant}${payload.proxy ? `\n${helperRole}：${state.self.name}` : ''}\n地點：${office ? `${office.name}（${[office.address, office.phone].filter(Boolean).join('，')}）` : ch?.label ?? ''}\n要帶：${docs.join('、')}\n受理期間：${b.period}`;
 
   $view.innerHTML = `<div class="page">
@@ -336,9 +462,58 @@ function renderCard(id) {
 }
 
 // ---------- 畫面：家人與代理 ----------
+/** 代理人這一端：邀請碼、QR Code、同步狀態 */
+function linkBlock(p) {
+  if (p.consent === 'granted' && p.link) {
+    return `<div class="banner claimed"><strong>✓ ${esc(p.name)}已在自己的手機同意</strong><p>開放：${esc(permsText(p.permissions))}</p></div>`;
+  }
+  if (p.consent === 'pending' && p.link) {
+    const url = `${location.origin}${location.pathname}#/invite/${p.link.code}`;
+    return `<div class="invite">
+      <p class="small">請${esc(p.name)}打開自己的城市通 →「拿得到」→「家人與代理」→ 輸入邀請碼或掃描 QR Code</p>
+      <p class="code big" aria-label="邀請碼">${esc(p.link.code.replace(/(\d{3})(\d{3})/, '$1 $2'))}</p>
+      <div class="qr small-qr">${qrSvg(url)}</div>
+      <p class="small muted waiting">等待${esc(p.name)}同意…（每 3 秒自動更新）</p>
+    </div>`;
+  }
+  if ((p.consent === 'pending' || p.consent === 'revoked' || p.consent === 'declined') && /App/.test(p.consentChannel ?? '')) {
+    return `<button type="button" class="btn block" data-invite="${esc(p.id)}">${p.link ? '重新邀請' : `邀請${esc(p.relation)}在自己的手機同意`}</button>`;
+  }
+  return '';
+}
+
+/** 被代理人這一端：誰在代理我、我開放了什麼、代理人做了什麼 */
+function myProxiesSection() {
+  const links = state.myLinks.filter((m) => m.view && m.view.status !== 'revoked');
+  return `<section class="card" aria-labelledby="my-proxies">
+    <h2 id="my-proxies">我的代理人</h2>
+    ${links.map((m) => `
+      <div class="my-proxy stack">
+        <div class="benefit-head"><h3>${esc(m.view.proxyName)}</h3><span class="status granted">已同意</span></div>
+        <p class="small muted">你可以隨時調整，${esc(m.view.proxyName)}的手機會馬上更新。</p>
+        <ul class="perm-list">${PERMS.map(([k, label]) => `
+          <li><label>${esc(label)}<input type="checkbox" data-link-perm="${esc(k)}" data-code="${esc(m.code)}" ${m.view.permissions?.[k] ? 'checked' : ''}></label></li>`).join('')}</ul>
+        <h3 class="small-h">${esc(m.view.proxyName)}幫你做了什麼</h3>
+        ${m.logs?.length ? `<ul class="log">${m.logs.slice(0, 8).map((l) => `<li>${esc(new Date(l.at).toLocaleString('zh-TW', { hour12: false }))}・${esc(l.actor)} ${esc(l.action)}</li>`).join('')}</ul>` : '<p class="small muted">還沒有紀錄。</p>'}
+        <button type="button" class="btn danger" data-link-revoke="${esc(m.code)}">撤銷代理</button>
+      </div>`).join('')}
+    <form class="form invite-form" id="invite-form">
+      <label>${links.length ? '有新的邀請？' : '家人邀請你？'}輸入 6 位數邀請碼
+        <input type="text" id="invite-code" inputmode="numeric" pattern="[0-9 ]*" maxlength="7" autocomplete="off" placeholder="例如 123456"></label>
+      <div class="row">
+        <button type="submit" class="btn">查看邀請</button>
+        ${inApp ? '<button type="button" class="btn secondary" data-scan>掃描 QR Code</button>' : ''}
+      </div>
+    </form>
+  </section>`;
+}
+
 function renderFamily() {
-  const log = load('log', []);
+  // 代理紀錄：本機的代辦，加上家人在自己手機上的同意、調整、撤銷
+  const remote = state.family.flatMap((p) => (p.link?.logs ?? []).map((l) => ({ ...l, target: null })));
+  const log = [...load('log', []), ...remote].sort((a, b) => (a.at < b.at ? 1 : -1));
   $view.innerHTML = `<div class="page">
+    ${demoBanner()}
     <header class="stack">
       <h1>家人與代理</h1>
       <p class="muted">幫長輩、孩子或需要協助的家人接收通知、查詢資格、代為申請與領取。代理要經過對方同意，對方可以隨時調整或撤銷。</p>
@@ -347,19 +522,22 @@ function renderFamily() {
       <section class="card" aria-labelledby="f-${esc(p.id)}">
         <div class="benefit-head">
           <h2 id="f-${esc(p.id)}">${esc(p.relation)}・${esc(p.name)}</h2>
-          <span class="status ${p.consent === 'granted' ? 'granted' : 'pending'}">${p.consent === 'granted' ? '已同意' : '等待同意'}</span>
+          <span class="status ${p.consent === 'granted' ? 'granted' : p.consent === 'pending' ? 'pending' : 'draft'}">${CONSENT_LABEL[p.consent] ?? '等待同意'}</span>
         </div>
         <p class="small muted">${ageFrom(p.birthday, today()) ?? '?'} 歲・${esc(p.town ?? '未填行政區')}${p.note ? `・${esc(p.note)}` : ''}</p>
-        <p class="small">授權方式：${esc(p.consentChannel ?? '')}</p>
+        <p class="small">授權方式：${esc(p.link ? `${p.name}在自己的城市通同意` : p.consentChannel ?? '')}</p>
+        ${linkBlock(p)}
         <ul class="perm-list">${PERMS.map(([k, label]) => `
-          <li><label>${esc(label)}<input type="checkbox" data-perm="${esc(k)}" data-pid="${esc(p.id)}" ${p.permissions?.[k] ? 'checked' : ''}></label></li>`).join('')}</ul>
-        <p class="small muted">權限由${esc(p.name)}決定（示範中可以直接切換）。</p>
+          <li><label>${esc(label)}<input type="checkbox" data-perm="${esc(k)}" data-pid="${esc(p.id)}" ${p.permissions?.[k] && p.consent === 'granted' ? 'checked' : ''} ${p.link ? 'disabled' : ''}></label></li>`).join('')}</ul>
+        <p class="small muted">${p.link ? `權限由${esc(p.name)}在自己的手機決定，這裡會自動更新。` : `權限由${esc(p.name)}決定（示範中可以直接切換）。`}</p>
         <div class="row">
           <button type="button" class="btn" data-view-as="${esc(p.id)}">查看${esc(p.relation)}的補助</button>
-          ${p.consent === 'pending' ? `<button type="button" class="btn secondary" data-simulate-consent="${esc(p.id)}">示範：${esc(p.name)}已同意</button>` : ''}
+          ${p.consent === 'pending' && !p.link ? `<button type="button" class="btn secondary" data-simulate-consent="${esc(p.id)}">示範：${esc(p.name)}已同意</button>` : ''}
           <button type="button" class="btn danger" data-revoke="${esc(p.id)}">撤銷代理</button>
         </div>
-      </section>`).join('') || '<p class="muted">還沒有家人。</p>'}
+      </section>`).join('') || `<p class="muted">${state.demoAs ? '你目前沒有代理其他家人。' : '還沒有家人。'}</p>`}
+
+    ${myProxiesSection()}
 
     <details class="card">
       <summary><strong>新增家人</strong></summary>
@@ -376,8 +554,17 @@ function renderFamily() {
     </details>
 
     <section class="card"><h2>代理紀錄</h2>
-      ${log.length ? `<ul class="log">${log.slice(0, 10).map((l) => `<li>${esc(new Date(l.at).toLocaleString('zh-TW', { hour12: false }))}・${esc(l.actor)} 為 ${esc(l.target)} ${esc(l.action)}</li>`).join('')}</ul>` : '<p class="small muted">還沒有代理操作。每一次代辦都會記在這裡，被代理的家人也看得到。</p>'}
+      ${log.length ? `<ul class="log">${log.slice(0, 10).map((l) => `<li>${esc(new Date(l.at).toLocaleString('zh-TW', { hour12: false }))}・${esc(l.actor)} ${l.target ? `為 ${esc(l.target)} ` : ''}${esc(l.action)}</li>`).join('')}</ul>` : '<p class="small muted">還沒有代理操作。每一次代辦都會記在這裡，被代理的家人也看得到。</p>'}
     </section>
+
+    <details class="card demo-switch">
+      <summary><strong>示範：這支手機是誰的？</strong></summary>
+      <p class="small muted">用兩支手機示範代理時，把第二支切成弟弟。只影響這支手機，資料分開存。</p>
+      <div class="row">
+        <button type="button" class="btn ${state.demoAs ? 'secondary' : ''}" data-demo-as="self">本人（金大森）</button>
+        <button type="button" class="btn ${state.demoAs === 'brother' ? '' : 'secondary'}" data-demo-as="brother">弟弟（金小華）</button>
+      </div>
+    </details>
     <button type="button" class="btn ghost" data-reset>重設示範資料</button>
   </div>`;
 }
@@ -392,7 +579,9 @@ function buildNotices() {
     if (!isSelf(p) && !(p.consent === 'granted' && p.permissions?.notify)) continue;
     const who = isSelf(p) ? '你' : `${p.relation}（${p.name}）`;
     const results = evaluateAll(state.benefits, factsFor(p));
+    const claimed = claimedOf(p);
     for (const r of results) {
+      if (claimed[r.benefit.id]) continue;
       if (r.status === 'eligible') eligible.push({ p, title: `${who}可能可以申請「${r.benefit.name}」`, body: r.benefit.amount, href: `#/b/${r.benefit.id}` });
       if (r.status === 'ask') asks.push({ p, title: `「${r.benefit.name}」還要確認 ${unknownCount(r)} 個條件`, body: `回答後就知道${who}能不能申請`, href: `#/b/${r.benefit.id}` });
     }
@@ -401,7 +590,7 @@ function buildNotices() {
       const [, m, d] = String(p.birthday).match(/^\d{4}[/-](\d{1,2})[/-](\d{1,2})$/) ?? [];
       events.push({ p, title: `${who}今年 ${Number(m)} 月 ${Number(d)} 日滿 65 歲`, body: '滿 65 歲當月就能申請敬老愛心卡，可以先準備 2 吋照片。', href: '#/b/senior-card' });
     }
-    if (factsFor(p).hasNewborn === true) {
+    if (factsFor(p).hasNewborn === true && !claimed['birth-grant']) {
       const days = daysSince(p.birthday, today());
       const left = ageFrom(p.birthday, today()) === 0 && days !== undefined ? `，還剩 ${60 - days} 天` : '';
       events.push({ p, title: `生育補助要在寶寶出生後 60 日內申請${left}`, body: '到辦理出生登記的戶政事務所申請，申請人是寶寶的媽媽，爸爸可以拿委託書代辦。', href: '#/b/birth-grant' });
@@ -431,20 +620,61 @@ function renderNotices() {
   $view._notices = list;
 }
 
+// ---------- 畫面：代理邀請（被代理人的手機） ----------
+async function renderInvite(code) {
+  $view.innerHTML = `<div class="page">${demoBanner()}<p class="muted">讀取邀請中…</p></div>`;
+  let link;
+  try {
+    ({ link } = await api('GET', `/links/${encodeURIComponent(code)}`));
+  } catch (err) {
+    $view.innerHTML = `<div class="page">${demoBanner()}<a class="back" href="#/family">← 回到家人與代理</a>
+      <div class="banner danger"><strong>沒辦法打開這個邀請</strong><p>${esc(err.message)}</p></div></div>`;
+    return;
+  }
+  if (link.status !== 'pending') {
+    $view.innerHTML = `<div class="page">${demoBanner()}<a class="back" href="#/family">← 回到家人與代理</a>
+      <div class="banner info"><strong>這個邀請已經處理過了（${esc(CONSENT_LABEL[link.status] ?? link.status)}）</strong></div></div>`;
+    return;
+  }
+  $view.innerHTML = `<div class="page">
+    ${demoBanner()}
+    <a class="back" href="#/family">← 回到家人與代理</a>
+    <header class="stack">
+      <p class="small muted">代理邀請・邀請碼 ${esc(link.code)}</p>
+      <h1>${esc(link.proxyName)}想幫你處理補助</h1>
+      <p>同意後，${esc(link.proxyName)}可以依你開放的權限，幫你接收通知、查詢資格、準備申請或代為領取。</p>
+    </header>
+    <section class="card">
+      <h2>你要開放哪些？</h2>
+      <p class="small muted">${esc(link.proxyName)}請求了：${esc(permsText(link.requested))}。你可以只開放一部分。</p>
+      <ul class="perm-list">${PERMS.map(([k, label]) => `
+        <li><label>${esc(label)}<input type="checkbox" name="perm" value="${esc(k)}" ${link.requested?.[k] ? 'checked' : ''}></label></li>`).join('')}</ul>
+    </section>
+    <div class="stack">
+      <button type="button" class="btn block" data-consent="${esc(link.code)}">同意</button>
+      <button type="button" class="btn ghost block" data-decline="${esc(link.code)}">不同意</button>
+    </div>
+    <p class="small muted">你可以隨時到「家人與代理」調整或撤銷。伺服器只存授權狀態與代辦紀錄，你的補助資格與回答不會上傳。</p>
+  </div>`;
+}
+
+const codeFrom = (text) => String(text ?? '').match(/(\d{3})\s?(\d{3})/)?.slice(1).join('') ?? null;
+
 // ---------- 路由 ----------
-function route() {
+function route(scroll = true) {
   const hash = location.hash || '#/';
   const [, page, id] = hash.split('/');
-  const tab = page === 'family' ? 'family' : page === 'notices' ? 'notices' : 'home';
+  const tab = page === 'family' || page === 'invite' ? 'family' : page === 'notices' ? 'notices' : 'home';
   document.querySelectorAll('.tabbar a').forEach((a) => {
     if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  if (page === 'b' && id) renderDetail(decodeURIComponent(id));
+  if (page === 'invite' && id) renderInvite(decodeURIComponent(id));
+  else if (page === 'b' && id) renderDetail(decodeURIComponent(id));
   else if (page === 'card' && id) renderCard(decodeURIComponent(id));
   else if (page === 'family') renderFamily();
   else if (page === 'notices') renderNotices();
   else renderHome();
-  window.scrollTo(0, 0);
+  if (scroll) window.scrollTo(0, 0);
 }
 
 // ---------- 事件 ----------
@@ -476,6 +706,79 @@ $view.addEventListener('click', async (e) => {
     route();
     return;
   }
+  if (d.invite) {
+    const p = profileById(d.invite);
+    try {
+      const res = await api('POST', '/links', {
+        proxyName: state.self.name, memberName: p.name, relation: p.relation,
+        permissions: { notify: true, query: true, apply: true, collect: true },
+      });
+      p.link = { code: res.code, token: res.proxyToken, logs: [] };
+      p.consent = 'pending';
+      save('family', state.family);
+      logAction({ actor: state.self.name, target: p.name, action: '送出代理邀請（請對方在自己的手機同意）' });
+      toast(`邀請碼 ${res.code}`);
+      renderFamily();
+    } catch (err) {
+      toast(`邀請失敗：${err.message}`);
+    }
+    return;
+  }
+  if (d.consent || d.decline) {
+    const code = d.consent || d.decline;
+    const perms = Object.fromEntries([...document.querySelectorAll('input[name="perm"]')].map((i) => [i.value, i.checked]));
+    try {
+      const res = await api('POST', `/links/${code}/consent`, d.consent ? { permissions: perms } : { accept: false });
+      if (d.consent) {
+        state.myLinks = [...state.myLinks.filter((m) => m.code !== code),
+          { code, token: res.ownerToken, proxyName: res.link.proxyName, view: res.link, logs: [], lastSeenAt: new Date().toISOString() }];
+        save('myLinks', state.myLinks.map(({ code: c, token, proxyName, lastSeenAt }) => ({ code: c, token, proxyName, lastSeenAt })));
+        toast(`已同意 ${res.link.proxyName} 代理`);
+      } else {
+        toast('已拒絕邀請');
+      }
+      location.hash = '#/family';
+      syncLinks();
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
+  if (d.linkRevoke) {
+    if (t.dataset.confirm !== 'yes') {
+      t.dataset.confirm = 'yes';
+      t.textContent = '再按一次確認撤銷';
+      return;
+    }
+    const m = state.myLinks.find((x) => x.code === d.linkRevoke);
+    try {
+      await api('PATCH', `/links/${m.code}`, { status: 'revoked' }, m.token);
+      state.myLinks = state.myLinks.filter((x) => x.code !== m.code);
+      save('myLinks', state.myLinks.map(({ code, token, proxyName, lastSeenAt }) => ({ code, token, proxyName, lastSeenAt })));
+      toast(`已撤銷 ${m.proxyName} 的代理`);
+      renderFamily();
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
+  if (d.scan !== undefined) {
+    try {
+      const text = await callApp('qr_code_scan', null, 120000);
+      const code = codeFrom(text);
+      if (code) location.hash = `#/invite/${code}`;
+      else toast('這不是拿得到的邀請 QR Code');
+    } catch {
+      toast('沒有掃到 QR Code');
+    }
+    return;
+  }
+  if (d.demoAs) {
+    saveGlobal('demoAs', d.demoAs === 'self' ? null : d.demoAs);
+    location.replace(`${location.pathname}#/family`);
+    setTimeout(() => location.reload(), 50);
+    return;
+  }
   if (d.viewAs) { save('current', d.viewAs); location.hash = '#/'; return; }
   if (d.openAs) { save('current', d.openAs); return; }
   if (d.revoke) {
@@ -485,6 +788,7 @@ $view.addEventListener('click', async (e) => {
       return;
     }
     const p = profileById(d.revoke);
+    if (p.link?.token) api('PATCH', `/links/${p.link.code}`, { status: 'revoked' }, p.link.token).catch(() => {});
     state.family = state.family.filter((x) => x.id !== d.revoke);
     save('family', state.family);
     if (load('current', 'self') === d.revoke) save('current', 'self');
@@ -494,9 +798,13 @@ $view.addEventListener('click', async (e) => {
     return;
   }
   if (d.reset !== undefined) {
-    state.family = await (await fetch('./data/family-demo.json')).json();
+    const demo = await (await fetch('./data/family-demo.json')).json();
+    state.family = state.demoAs ? [] : demo;
+    state.myLinks = [];
+    save('myLinks', []);
     save('family', state.family);
-    save('answers.self', {});
+    save('answers.self', state.demoAs ? demo.find((x) => x.id === state.demoAs)?.answers ?? {} : {});
+    save('claimed', {});
     save('log', []);
     save('current', 'self');
     toast('已重設示範資料');
@@ -543,6 +851,22 @@ $view.addEventListener('change', (e) => {
     if (t.checked) done.add(i); else done.delete(i);
     save(key, [...done]);
   }
+  if (t.dataset.claim) {
+    const p = current();
+    const b = state.benefits.find((x) => x.id === t.dataset.claim);
+    setClaimed(p, b.id, t.checked);
+    if (!isSelf(p)) record(p, `標記「${b.name}」${t.checked ? '已領取' : '尚未領取'}`);
+    toast(t.checked ? `「${b.name}」已標記領取` : '已取消領取標記');
+    route();
+    return;
+  }
+  if (t.dataset.linkPerm) {
+    const m = state.myLinks.find((x) => x.code === t.dataset.code);
+    api('PATCH', `/links/${m.code}`, { permissions: { [t.dataset.linkPerm]: t.checked } }, m.token)
+      .then((res) => { m.view = res.link; toast('已更新，對方的手機會馬上看到'); })
+      .catch((err) => { t.checked = !t.checked; toast(err.message); });
+    return;
+  }
   if (t.dataset.perm) {
     const p = profileById(t.dataset.pid);
     p.permissions = { ...p.permissions, [t.dataset.perm]: t.checked };
@@ -558,6 +882,13 @@ $view.addEventListener('input', (e) => {
 });
 
 $view.addEventListener('submit', (e) => {
+  if (e.target.id === 'invite-form') {
+    e.preventDefault();
+    const code = codeFrom(document.getElementById('invite-code').value);
+    if (!code) { toast('請輸入 6 位數邀請碼'); return; }
+    location.hash = `#/invite/${code}`;
+    return;
+  }
   if (e.target.id !== 'add-form') return;
   e.preventDefault();
   const v = (id) => document.getElementById(id);
@@ -587,26 +918,46 @@ $view.addEventListener('submit', (e) => {
 // ---------- 啟動 ----------
 (async function start() {
   $view.innerHTML = '<div class="page"><p class="muted">載入中…</p></div>';
+  // 示範身分：網址 ?as=brother 或「家人與代理」最下面切換；各身分的資料分開存
+  // （網址參數只影響這個分頁，方便同一台電腦開兩個分頁測試；切換按鈕才會記住）
+  const asParam = new URLSearchParams(location.search).get('as');
+  state.demoAs = asParam === 'brother' ? 'brother' : asParam === 'self' ? null : loadGlobal('demoAs', null);
+  if (state.demoAs) setNamespace(state.demoAs);
   try {
     const [benefits, questions, offices] = await Promise.all(
       ['benefits', 'questions', 'offices'].map((f) => fetch(`./data/${f}.json`).then((r) => r.json()))
     );
     Object.assign(state, { benefits, questions, offices });
     state.self = await getSelfProfile();
-    // 示範資料改版時（例如新增女兒），自動換成新版
-    const DEMO_VERSION = 2;
-    state.family = load('demoVersion', 0) === DEMO_VERSION ? load('family', null) : null;
-    if (!state.family) {
-      state.family = await (await fetch('./data/family-demo.json')).json();
-      save('demoVersion', DEMO_VERSION);
-      save('current', 'self');
+    const demo = await (await fetch('./data/family-demo.json')).json();
+    if (state.demoAs) {
+      // 這支手機扮演家人（例如弟弟）：本人資料換成弟弟的，沒有代理別人
+      const me = demo.find((x) => x.id === state.demoAs);
+      state.self = { ...state.self, name: me.name, birthday: me.birthday, citizen: me.citizen, nativePeople: me.nativePeople, town: me.town, village: me.village, source: 'demo' };
+      if (load('answers.self', null) === null) save('answers.self', me.answers ?? {});
+      state.family = load('family', []);
+    } else {
+      // 示範資料改版時（例如新增女兒），自動換成新版
+      const DEMO_VERSION = 2;
+      state.family = load('demoVersion', 0) === DEMO_VERSION ? load('family', null) : null;
+      if (!state.family) {
+        state.family = demo;
+        save('demoVersion', DEMO_VERSION);
+        save('current', 'self');
+      }
     }
     save('family', state.family);
+    state.myLinks = load('myLinks', []).map((m) => ({ ...m, view: null, logs: [] }));
   } catch (err) {
     $view.innerHTML = `<div class="page"><div class="banner danger"><strong>資料載入失敗</strong><p>請確認網路後重新開啟。（${esc(err.message)}）</p></div></div>`;
     return;
   }
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', () => route());
   window.__nadedaoStarted = true;
   route();
+  // 代理授權同步：有邀請或代理人時，每 3 秒更新一次
+  syncLinks();
+  setInterval(() => {
+    if (state.family.some((p) => p.link) || state.myLinks.length) syncLinks();
+  }, 3000);
 })();
