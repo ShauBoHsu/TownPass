@@ -9,7 +9,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "start": "node src/node.js",
-    "test": "node --test test/engine.test.js test/rules.test.js"
+    "test": "node --test test/engine.test.js test/rules.test.js test/need.test.js"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",

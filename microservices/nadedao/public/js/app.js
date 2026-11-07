@@ -1,6 +1,7 @@
 // 拿得到：畫面與流程（hash 路由）
 import { factsFrom, evaluateAll, evaluateBenefit, evaluateCondition, nextQuestion, ageFrom, daysSince } from './engine.js';
 import { inApp, getSelfProfile, notify, phoneCall, openMap } from './bridge.js';
+import { rankByNeed } from './need.js';
 import { load, save, logAction } from './store.js';
 
 const $view = document.getElementById('view');
@@ -17,7 +18,9 @@ const PERMS = [
   ['collect', '代為領取'],
 ];
 
-const state = { benefits: [], questions: {}, offices: {}, self: null, family: [] };
+// need：「說說你的需要」輸入的文字，只放在記憶體，不存也不上傳
+const state = { benefits: [], questions: {}, offices: {}, self: null, family: [], need: '' };
+const NEED_EXAMPLES = ['牙齒不好', '需要輪椅', '剛生寶寶', '想搭公車', '失業繳不起房租'];
 
 // ---------- 小工具 ----------
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -111,6 +114,47 @@ function consentBanner(p) {
 }
 
 // ---------- 畫面：補助清單 ----------
+function benefitListHtml(results) {
+  const ranked = rankByNeed(results, state.need);
+  return ranked.map((r) => {
+    const n = r.need;
+    const needLine = n
+      ? `<div class="need-score${n.confidence ? '' : ' none'}">
+          <span class="bar" aria-hidden="true"><span style="width:${n.confidence}%"></span></span>
+          <span>信心度 ${n.confidence}%${n.matched.length ? `・因為提到「${n.matched.map(esc).join('、')}」` : '・跟你說的需要關係不大'}</span>
+        </div>`
+      : '';
+    return `<a class="card${n && !n.confidence ? ' faded' : ''}" href="#/b/${esc(r.benefit.id)}">
+      <div class="benefit-head">
+        <h3>${esc(r.benefit.name)}</h3>
+        <span class="status ${r.status}">${STATUS[r.status].icon} ${STATUS[r.status].label}</span>
+      </div>
+      <p class="reason">${esc(reasonOf(r))}</p>
+      ${needLine}
+    </a>`;
+  }).join('');
+}
+
+function needBox(p) {
+  return `<section class="card need-box" aria-labelledby="need-title">
+    <label id="need-title" for="need-input"><strong>說說${isSelf(p) ? '你' : esc(p.relation)}的需要</strong></label>
+    <div class="need-input-row">
+      <input id="need-input" type="search" enterkeyhint="search" maxlength="60" autocomplete="off"
+        placeholder="例如：牙齒不好、需要輪椅" value="${esc(state.need)}">
+    </div>
+    <div class="need-examples" role="group" aria-label="範例">
+      ${NEED_EXAMPLES.map((x) => `<button type="button" class="chip-btn" data-need="${esc(x)}">${esc(x)}</button>`).join('')}
+    </div>
+    <p class="small muted">依你說的話計算每項補助的信心度並排序。在手機上比對，不會上傳。</p>
+  </section>`;
+}
+
+function updateBenefitList() {
+  const list = document.getElementById('benefit-list');
+  if (!list) return;
+  list.innerHTML = benefitListHtml(evaluateAll(state.benefits, factsFor(current())));
+}
+
 function renderHome() {
   const p = current();
   let html = `<div class="page">
@@ -137,16 +181,8 @@ function renderHome() {
       <div class="no"><strong>${n('ineligible')}</strong>不符合</div>
     </div>
     ${q ? questionCard(p, q) : ''}
-    <div class="stack">
-      ${results.map((r) => `
-        <a class="card" href="#/b/${esc(r.benefit.id)}">
-          <div class="benefit-head">
-            <h3>${esc(r.benefit.name)}</h3>
-            <span class="status ${r.status}">${STATUS[r.status].icon} ${STATUS[r.status].label}</span>
-          </div>
-          <p class="reason">${esc(reasonOf(r))}</p>
-        </a>`).join('')}
-    </div>
+    ${needBox(p)}
+    <div class="stack" id="benefit-list" aria-live="polite">${benefitListHtml(results)}</div>
     <p class="footnote">比對在這支手機上完成，個資不會上傳。結果僅供參考，以區公所、戶政事務所審核為準。</p>
   </div>`;
   $view.innerHTML = html;
@@ -418,6 +454,13 @@ $view.addEventListener('click', async (e) => {
   const d = t.dataset;
 
   if (d.who) { save('current', d.who); renderHome(); return; }
+  if (d.need !== undefined) {
+    state.need = d.need;
+    const input = document.getElementById('need-input');
+    if (input) input.value = d.need;
+    updateBenefitList();
+    return;
+  }
   if (d.answer) {
     setAnswer(current(), d.answer, JSON.parse(d.value));
     toast('已記錄');
@@ -506,6 +549,12 @@ $view.addEventListener('change', (e) => {
     save('family', state.family);
     logAction({ actor: p.name, target: state.self.name, action: `${t.checked ? '開放' : '關閉'}「${PERMS.find(([k]) => k === t.dataset.perm)[1]}」` });
   }
+});
+
+$view.addEventListener('input', (e) => {
+  if (e.target.id !== 'need-input') return;
+  state.need = e.target.value;
+  updateBenefitList();
 });
 
 $view.addEventListener('submit', (e) => {
